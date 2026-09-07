@@ -1,9 +1,9 @@
-import frappe
-from frappe.utils import get_fullname
+import bor
+from bor.utils import get_fullname
 
 
 def execute():
-    all_shares = frappe.db.get_list(
+    all_shares = bor.db.get_list(
         "Drive DocShare",
         fields=[
             "share_name",
@@ -27,7 +27,7 @@ def execute():
 
 
 def create_activity_log(share):
-    log = frappe.new_doc("Drive Entity Activity Log")
+    log = bor.new_doc("Drive Entity Activity Log")
     log.entity = share.share_name
     log.action_type = "share_add"
     log.meta_value = 2 if share.write else 1
@@ -37,7 +37,7 @@ def create_activity_log(share):
 
 
 def update_activity_log(log, share):
-    title = frappe.db.get_value("Drive File", share.share_name, ["title"])
+    title = bor.db.get_value("Drive File", share.share_name, ["title"])
     owner_fullname = get_fullname(share.owner)
     if share.everyone:
         log.document_field = "everyone"
@@ -60,6 +60,6 @@ def update_activity_log(log, share):
         log.old_value = None
         log.new_value = share.user_name
     log.save()
-    frappe.db.set_value("Drive Entity Activity Log", log.name, "message", message)
-    frappe.db.set_value("Drive Entity Activity Log", log.name, "owner", share.owner)
-    frappe.db.set_value("Drive Entity Activity Log", log.name, "creation", share.creation)
+    bor.db.set_value("Drive Entity Activity Log", log.name, "message", message)
+    bor.db.set_value("Drive Entity Activity Log", log.name, "owner", share.owner)
+    bor.db.set_value("Drive Entity Activity Log", log.name, "creation", share.creation)

@@ -1,14 +1,14 @@
-import frappe
+import bor
 
 from drive.api.permissions import get_teams
 
 
 def common_filters(func):
     def decorator(user):
-        user = user or frappe.session.user
-        if user == "Administrator" or "Drive Admin" in frappe.get_roles():
+        user = user or bor.session.user
+        if user == "Administrator" or "Drive Admin" in bor.get_roles():
             return ""
-        return func(frappe.db.escape(user))
+        return func(bor.db.escape(user))
 
     return decorator
 
@@ -27,7 +27,7 @@ def filter_drive_permission(user):
 def filter_drive_team(user):
     teams = get_teams(user)
     if teams:
-        teams = ", ".join(frappe.db.escape(team) for team in teams)
+        teams = ", ".join(bor.db.escape(team) for team in teams)
         return f"""(`tabDrive Team`.name in ({teams}))"""
 
 
@@ -43,7 +43,7 @@ def filter_drive_comment(user):
 
 @common_filters
 def filter_drive_favourite(user):
-    user = user or frappe.session.user
+    user = user or bor.session.user
     if user == "Administrator":
         return ""
     return f"""(`tabDrive Favourite`.`user` = {user})"""

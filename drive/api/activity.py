@@ -1,4 +1,4 @@
-import frappe
+import bor
 from pypika import Order
 
 
@@ -11,12 +11,12 @@ def create_new_activity_log(
     field_new_value=None,
     field_meta_value=None,
 ):
-    doc = frappe.new_doc("Drive Entity Activity Log")
+    doc = bor.new_doc("Drive Entity Activity Log")
     doc.entity = entity
     doc.document_field = document_field
     doc.action_type = activity_type
     doc.message = activity_message
-    doc.owner = frappe.session.user
+    doc.owner = bor.session.user
     doc.meta_value = field_meta_value
     if document_field:
         doc.old_value = field_old_value
@@ -27,13 +27,13 @@ def create_new_activity_log(
         pass
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def get_entity_activity_log(entity_name):
     """
     Warning: Assumes `Drive File` only
     """
-    Activity = frappe.qb.DocType("Drive Entity Activity Log")
-    User = frappe.qb.DocType("User")
+    Activity = bor.qb.DocType("Drive Entity Activity Log")
+    User = bor.qb.DocType("User")
     selectedFields = [
         Activity.name,
         Activity.message,
@@ -48,7 +48,7 @@ def get_entity_activity_log(entity_name):
         User.user_image,
     ]
     query = (
-        frappe.qb.from_(Activity)
+        bor.qb.from_(Activity)
         .select(*selectedFields)
         .left_join(User)
         .on(Activity.owner == User.email)
@@ -59,7 +59,7 @@ def get_entity_activity_log(entity_name):
     result = query.run(as_dict=True)
     for i in result:
         if i.action_type.startswith("share") and i.document_field == "User":
-            i.share_user_fullname, i.share_user_image = frappe.get_value(
+            i.share_user_fullname, i.share_user_image = bor.get_value(
                 "User", i.new_value, ["full_name", "user_image"]
             )
     return result

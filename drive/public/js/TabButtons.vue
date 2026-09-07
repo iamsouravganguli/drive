@@ -28,8 +28,8 @@ defineProps({
   tabs: Array,
   modelValue: Object,
 });
-const filterIcon = frappe.utils.icon("filter", "md");
-const tickIcon = frappe.utils.icon("tick", "sm");
+const filterIcon = bor.utils.icon("filter", "md");
+const tickIcon = bor.utils.icon("tick", "sm");
 defineEmits(["update:modelValue"]);
 </script>
 

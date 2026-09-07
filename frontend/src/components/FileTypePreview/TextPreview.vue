@@ -27,7 +27,7 @@ async function fetchContent() {
   const headers = {
     Accept: "application/json",
     "Content-Type": "application/json; charset=utf-8",
-    "X-Frappe-Site-Name": window.location.hostname,
+    "X-Bor-Site-Name": window.location.hostname,
     Range: "bytes=0-10000000",
   }
   const res = await fetch(

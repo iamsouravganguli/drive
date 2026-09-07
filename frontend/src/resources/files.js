@@ -67,7 +67,7 @@ export const getDocuments = createResource({
   ...COMMON_OPTIONS,
   url: "drive.api.list.files",
   makeParams: (params) => {
-    return { ...params, file_kinds: '["Frappe Document"]' }
+    return { ...params, file_kinds: '["Bor Document"]' }
   },
   cache: "document-folder-contents",
 })
@@ -79,7 +79,7 @@ export const getSlides = createResource({
   transform(data) {
     data = data.map((k) => ({
       ...k,
-      mime_type: "frappe/slides",
+      mime_type: "bor/slides",
       file_type: "Presentation",
       path: k.name,
       external: true,

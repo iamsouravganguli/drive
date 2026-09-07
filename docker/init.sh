@@ -1,16 +1,16 @@
 #!bin/bash
 
-if [ -d "/home/frappe/frappe-bench/apps/frappe" ]; then
+if [ -d "/home/bor/bor-bench/apps/bor" ]; then
     echo "Bench already exists, skipping init"
-    cd frappe-bench
+    cd bor-bench
     bench start
 else
     echo "Creating new bench..."
 fi
 
-bench init --skip-redis-config-generation frappe-bench --version version-15
+bench init --skip-redis-config-generation bor-bench --version version-15
 
-cd frappe-bench
+cd bor-bench
 
 # Use containers instead of localhost
 bench set-mariadb-host mariadb

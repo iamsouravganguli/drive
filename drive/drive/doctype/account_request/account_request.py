@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import json
 
-import frappe
-from frappe.model.document import Document
-from frappe.utils import get_url, random_string
+import bor
+from bor.model.document import Document
+from bor.utils import get_url, random_string
 
 from drive.utils.users import generate_otp, get_country_info
 
@@ -17,10 +17,10 @@ from drive.utils.users import generate_otp, get_country_info
 class AccountRequest(Document):
     def before_insert(self):
         # if not is_valid_email_address(self.email):
-        #     frappe.throw(f"{self.email} is not a valid email address")
+        #     bor.throw(f"{self.email} is not a valid email address")
         self.request_key = random_string(32)
 
-        self.ip_address = frappe.local.request_ip
+        self.ip_address = bor.local.request_ip
         geo_location = get_country_info() or {}
         self.geo_location = json.dumps(geo_location, indent=1, sort_keys=True)
         self.state = geo_location.get("regionName")
@@ -30,13 +30,13 @@ class AccountRequest(Document):
 
     def set_otp(self):
         self.otp = generate_otp()
-        self.otp_generated_at = frappe.utils.now_datetime()
+        self.otp_generated_at = bor.utils.now_datetime()
         self.save(ignore_permissions=True)
 
     def send_otp(self):
-        frappe.sendmail(
+        bor.sendmail(
             recipients=self.email,
-            subject="Frappe Drive - OTP",
+            subject="Bor Drive - OTP",
             template="otp",
             args={"otp": self.otp},
             now=True,
@@ -49,9 +49,9 @@ class AccountRequest(Document):
     def too_many_requests_with_field(self, field_name, limits):
         key = getattr(self, field_name)
         for allowed_count, kwargs in limits:
-            count = frappe.db.count(
+            count = bor.db.count(
                 self.doctype,
-                {field_name: key, "creation": (">", frappe.utils.add_to_date(None, **kwargs))},
+                {field_name: key, "creation": (">", bor.utils.add_to_date(None, **kwargs))},
             )
             if count > allowed_count:
                 return True
@@ -69,7 +69,7 @@ class AccountRequest(Document):
         return " ".join(filter(None, [self.first_name, self.last_name]))
 
     def get_site_name(self):
-        return self.subdomain + "." + frappe.db.get_value("Saas Settings", self.saas_app, "domain")
+        return self.subdomain + "." + bor.db.get_value("Saas Settings", self.saas_app, "domain")
 
     def is_using_new_saas_flow(self):
         return bool(self.product_trial)

@@ -1,9 +1,9 @@
-import frappe
+import bor
 
 
 def execute():
-    for user in frappe.db.get_list("User", pluck="name"):
-        teams = frappe.get_all(
+    for user in bor.db.get_list("User", pluck="name"):
+        teams = bor.get_all(
             "Drive Team Member",
             pluck="parent",
             filters=[
@@ -12,8 +12,8 @@ def execute():
             ],
         )
         if teams:
-            if not frappe.db.exists("Drive Settings", {"user": user}):
-                frappe.get_doc(
+            if not bor.db.exists("Drive Settings", {"user": user}):
+                bor.get_doc(
                     {
                         "doctype": "Drive Settings",
                         "user": user,

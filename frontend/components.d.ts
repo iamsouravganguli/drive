@@ -38,7 +38,7 @@ declare module 'vue' {
     FloatingComments: typeof import('./src/components/DocEditor/components/FloatingComments.vue')['default']
     Folder: typeof import('./src/components/MimeIcons/Folder.vue')['default']
     FontFamily: typeof import('./src/components/DocEditor/components/FontFamily.vue')['default']
-    FrappeDriveLogo: typeof import('./src/components/FrappeDriveLogo.vue')['default']
+    BorDriveLogo: typeof import('./src/components/BorDriveLogo.vue')['default']
     GeneralAccess: typeof import('./src/components/GeneralAccess.vue')['default']
     GeneralDialog: typeof import('./src/components/ConfirmDialog.vue')['default']
     GenericDialog: typeof import('./src/components/GenericDialog.vue')['default']

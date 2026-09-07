@@ -1,9 +1,9 @@
-import frappe
+import bor
 
 
 def execute():
-    for k in frappe.get_all("Drive File", fields=["name", "modified"]):
-        frappe.db.set_value(
+    for k in bor.get_all("Drive File", fields=["name", "modified"]):
+        bor.db.set_value(
             "Drive File",
             k.name,
             "_modified",

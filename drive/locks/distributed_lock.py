@@ -1,4 +1,4 @@
-import frappe
+import bor
 import redis
 
 
@@ -11,8 +11,8 @@ class DistributedLock(object):
         self.path = path
         self.exclusive = exclusive
         self.ttl = ttl
-        self.key = frappe.cache().make_key(path)
-        self.lock_id = f"{frappe.session.user}{frappe.utils.now_datetime().timestamp()}"
+        self.key = bor.cache().make_key(path)
+        self.lock_id = f"{bor.session.user}{bor.utils.now_datetime().timestamp()}"
         self.acquired = False
 
     def acquire_write_lock(self):
@@ -45,12 +45,12 @@ class DistributedLock(object):
 
     def _add(self, key, value, ttl):
         """Returns true if key does not already exist and value is set"""
-        return frappe.cache().set(key, value, ex=ttl, nx=True)
+        return bor.cache().set(key, value, ex=ttl, nx=True)
 
     def _increment(self, key, ttl):
         """Atomic transaction to increment value. Returns False if current value cannot be incremented.
         If the key does not exist, value is set to 1"""
-        with frappe.cache().pipeline() as pipe:
+        with bor.cache().pipeline() as pipe:
             try:
                 res = pipe.incr(key).expire(key, ttl).execute()
                 return True
@@ -61,16 +61,16 @@ class DistributedLock(object):
         """Atomic transaction to decrement value. Returns False if current value cannot be decremented
         or if the key does not exist"""
         try:
-            if not frappe.cache().exists(key):
+            if not bor.cache().exists(key):
                 return False
-            frappe.cache().decr(key)
+            bor.cache().decr(key)
             return True
         except redis.ResponseError:
             return False
 
     def _check_and_set(self, key, expected_val, new_val, ttl):
         """Atomic transaction to set value if current value matches the expected value"""
-        with frappe.cache().pipeline() as pipe:
+        with bor.cache().pipeline() as pipe:
             while True:
                 try:
                     pipe.watch(key)
@@ -85,7 +85,7 @@ class DistributedLock(object):
 
     def _check_and_delete(self, key, expected_val):
         """Atomic transaction to delete the key if current value matches the expected value"""
-        with frappe.cache().pipeline() as pipe:
+        with bor.cache().pipeline() as pipe:
             while True:
                 try:
                     pipe.watch(key)

@@ -1,5 +1,5 @@
 <template>
-  <FrappeListView
+  <BorListView
     ref="container"
     class="relative select-none p-5 md:pb-15"
     row-key="name"
@@ -63,7 +63,7 @@
         </div>
       </div>
     </template>
-  </FrappeListView>
+  </BorListView>
   <ContextMenu
     v-if="rowEvent && selectedRow"
     :key="selectedRow.name"
@@ -80,7 +80,7 @@ import {
   ListGroupHeader,
   ListEmptyState,
   LoadingIndicator,
-  ListView as FrappeListView,
+  ListView as BorListView,
   Avatar,
 } from "frappe-ui"
 import { getThumbnailUrl } from "@/utils/getIconUrl"

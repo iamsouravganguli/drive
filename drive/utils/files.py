@@ -5,7 +5,7 @@ from pathlib import Path
 import shutil
 
 import cv2
-import frappe
+import bor
 import magic
 import mimemapper
 from PIL import Image, ImageOps
@@ -14,7 +14,7 @@ from drive.locks.distributed_lock import DistributedLock
 
 from . import get_home_folder
 
-DriveFile = frappe.qb.DocType("Drive File")
+DriveFile = bor.qb.DocType("Drive File")
 
 
 class FileManager:
@@ -30,14 +30,14 @@ class FileManager:
     ]
 
     def __init__(self):
-        settings = frappe.get_single("Drive Disk Settings")
+        settings = bor.get_single("Drive Disk Settings")
         self.settings = settings
         self.s3_enabled = settings.enabled
         self.flat = settings.flat
         self.bucket = settings.bucket
-        self.site_folder = Path(frappe.get_site_path("private/files"))
+        self.site_folder = Path(bor.get_site_path("private/files"))
 
-        TEAMS = frappe.get_all("Drive Team", fields=["name", "s3_bucket", "prefix"])
+        TEAMS = bor.get_all("Drive Team", fields=["name", "s3_bucket", "prefix"])
         self.bucket_map = {k["name"]: k["s3_bucket"] for k in TEAMS}
         self.prefix_map = {k["name"]: k["prefix"] for k in TEAMS}
 
@@ -89,7 +89,7 @@ class FileManager:
         if self.s3_enabled:
             self.conn.upload_file(current_path, self.get_bucket(drive_file.team), drive_file.path)
             if drive_file and create_thumbnail and self.can_create_thumbnail(drive_file):
-                frappe.enqueue(
+                bor.enqueue(
                     self.upload_thumbnail,
                     now=True,
                     at_front=True,
@@ -102,7 +102,7 @@ class FileManager:
             # could break for folders?
             os.rename(current_path, self.site_folder / drive_file.path)
             if drive_file and create_thumbnail and self.can_create_thumbnail(drive_file):
-                frappe.enqueue(
+                bor.enqueue(
                     self.upload_thumbnail,
                     now=True,
                     at_front=True,
@@ -167,7 +167,7 @@ class FileManager:
                     final_path = disk_path.with_suffix(".thumbnail")
                     disk_path.rename(final_path)
         except BaseException as e:
-            frappe.log_error("Thumbnail failed", e)
+            bor.log_error("Thumbnail failed", e)
             if self.s3_enabled:
                 try:
                     os.remove(file_path)
@@ -187,7 +187,7 @@ class FileManager:
             # perf: stupidly complicated because we use this both with a real entity and a dict
             # broken: for docs, have to first create that folder
             parent = (
-                Path(frappe.get_value("Drive File", entity.parent_entity, "path") or "")
+                Path(bor.get_value("Drive File", entity.parent_entity, "path") or "")
                 if not hasattr(entity, "parent_path")
                 else Path(entity.parent_path)
             )
@@ -224,7 +224,7 @@ class FileManager:
                 with open(self.site_folder / entity.path, "rb") as fh:
                     buf = BytesIO(fh.read())
         except BaseException:
-            frappe.throw("Could not find this file", frappe.NotFound)
+            bor.throw("Could not find this file", bor.NotFound)
 
         return buf
 
@@ -296,7 +296,7 @@ class FileManager:
             for path, f in basic_files.items():
                 # Drive-created folders - registered S3 objects - have trailing slashes.
                 is_group = f.get("Folder") or f["Key"].endswith("/")
-                exists = frappe.get_value(
+                exists = bor.get_value(
                     "Drive File",
                     {
                         "path": f["Key"].rstrip("/") + ("/" if is_group else ""),
@@ -319,7 +319,7 @@ class FileManager:
             files = {}
             for f in root_folder.glob("**/*"):
                 path = f.relative_to(self.site_folder)
-                exists = frappe.get_value(
+                exists = bor.get_value(
                     "Drive File",
                     {"path": str(path), "team": team, "is_active": 1},
                     "name",
@@ -343,7 +343,7 @@ class FileManager:
         return Path(get_home_folder(team)["path"]) / self.settings.thumbnail_prefix / (name + ".thumbnail")
 
     def get_thumbnail(self, team, name):
-        return self.get_file(frappe._dict({"team": team, "path": str(self.get_thumbnail_path(team, name))}))
+        return self.get_file(bor._dict({"team": team, "path": str(self.get_thumbnail_path(team, name))}))
 
     def __get_trash_path(self, entity: DriveFile):
         root = get_home_folder(entity.team)
@@ -351,14 +351,14 @@ class FileManager:
 
     @__not_if_flat
     def rename(self, entity):
-        if not entity.path or entity.mime_type == "frappe/slides":
+        if not entity.path or entity.mime_type == "bor/slides":
             return
         new_path = self.get_disk_path(entity)
         return self.move(entity, new_path)
 
     @__not_if_flat
     def move_to_trash(self, entity: DriveFile):
-        if not entity.path or entity.mime_type.startswith("frappe"):
+        if not entity.path or entity.mime_type.startswith("bor"):
             return
 
         from botocore.exceptions import ClientError
@@ -385,7 +385,7 @@ class FileManager:
                 else:
                     cur_path.rename(full_trash_path)
         except (FileNotFoundError, ClientError):
-            frappe.log_error(f"Moved {entity.name} to trash without it being on disk")
+            bor.log_error(f"Moved {entity.name} to trash without it being on disk")
             pass
 
     @__not_if_flat
@@ -393,7 +393,7 @@ class FileManager:
         """
         Restore a file from the trash.
         """
-        self.move(frappe._dict(path=self.__get_trash_path(entity), team=entity.team), entity.path)
+        self.move(bor._dict(path=self.__get_trash_path(entity), team=entity.team), entity.path)
 
     @__not_if_flat
     def move(self, entity, new_path: str | Path):
@@ -417,7 +417,7 @@ class FileManager:
                 else:
                     cur_path.rename(dest_path)
         except BaseException as e:
-            frappe.throw("This file doesn't exist on disk.")
+            bor.throw("This file doesn't exist on disk.")
         return new_path
 
     def delete_file(self, entity):

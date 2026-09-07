@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea to improve Frappe Drive
+about: Suggest an idea to improve Bor Drive
 labels: feature-request
 ---
 

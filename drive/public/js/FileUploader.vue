@@ -155,7 +155,7 @@ watch(search, async (query) => {
     currentTree.value.searching = false;
   } else {
     currentTree.value.searching = "completed";
-    let { message } = await frappe.call("drive.api.list.files", {
+    let { message } = await bor.call("drive.api.list.files", {
       team: team.value,
       search: query,
       only_parent: 0,
@@ -201,7 +201,7 @@ function toggle_node(node) {
     }
   } else {
     selected_node.value = node;
-    frappe
+    bor
       .call("drive.api.permissions.get_entity_with_permissions", {
         entity_name: node.value,
       })
@@ -225,12 +225,12 @@ const files_to_nodes = (arr) =>
   }));
 
 const teams = ref({});
-frappe
+bor
   .call("drive.api.permissions.get_teams", { details: 1 })
   .then((k) => (teams.value = k.message));
 
 async function get_files(node, method, params) {
-  const { message } = await frappe.call(method, params);
+  const { message } = await bor.call(method, params);
   node.open = true;
   node.children = files_to_nodes(message);
   node.fetching = false;

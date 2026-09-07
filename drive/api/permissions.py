@@ -1,8 +1,8 @@
 import io
 
-import frappe
+import bor
 import markdown
-from frappe.utils import getdate
+from bor.utils import getdate
 from markdown.extensions.wikilinks import WikiLinkExtension
 from pypika import Field
 
@@ -47,22 +47,22 @@ def get_team_access(entity):
     return {**filter_access(path), "team": path[-1]["shared_team"]}
 
 
-@frappe.whitelist(allow_guest=True)
+@bor.whitelist(allow_guest=True)
 def get_user_access(entity, user: str = None, team: bool = False):
     """
     Return the user specific permissions for an entity. Toggle `team` to check team permission.
     """
     if isinstance(entity, str):
-        entity = frappe.get_cached_doc("Drive File", entity)
+        entity = bor.get_cached_doc("Drive File", entity)
     access = NO_ACCESS.copy()
     if not user:
         if team:
             # Return team perms immediately
             return get_team_access(entity)
         else:
-            user = frappe.session.user
-    # if not team and user not in [frappe.session.user, "Guest"] and not is_admin(entity.team):
-    #     frappe.throw("You cannot check permissions of other users", PermissionError)
+            user = bor.session.user
+    # if not team and user not in [bor.session.user, "Guest"] and not is_admin(entity.team):
+    #     bor.throw("You cannot check permissions of other users", PermissionError)
 
     # Owners and team members of a file have access
     teams = get_teams(user)
@@ -101,65 +101,65 @@ def get_user_access(entity, user: str = None, team: bool = False):
     return access
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def is_admin(team):
-    if frappe.session.user == "Administrator":
+    if bor.session.user == "Administrator":
         return True
-    drive_team = {k.user: k for k in frappe.get_doc("Drive Team", team).users}
-    return drive_team[frappe.session.user].access_level == 2
+    drive_team = {k.user: k for k in bor.get_doc("Drive Team", team).users}
+    return drive_team[bor.session.user].access_level == 2
 
 
 def get_access_level(team):
-    drive_team = {k.user: k for k in frappe.get_doc("Drive Team", team).users}
-    return drive_team[frappe.session.user].access_level
+    drive_team = {k.user: k for k in bor.get_doc("Drive Team", team).users}
+    return drive_team[bor.session.user].access_level
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def get_teams(user=None, details=None, exclude_personal=True):
     """
     Returns all the teams that the current user is part of.
     """
     if not user:
-        user = frappe.session.user
+        user = bor.session.user
 
-    teams = frappe.get_all(
+    teams = bor.get_all(
         "Drive Team Member",
         pluck="parent",
         filters=[["parenttype", "=", "Drive Team"], ["user", "=", user]],
     )
     if details:
-        teams_info = {team: frappe.get_doc("Drive Team", team) for team in teams}
+        teams_info = {team: bor.get_doc("Drive Team", team) for team in teams}
         if exclude_personal:
             return {t: team for t, team in teams_info.items() if not team.personal}
     return teams
 
 
-@frappe.whitelist(allow_guest=True)
+@bor.whitelist(allow_guest=True)
 def get_entity_with_permissions(entity_name):
     """
     Return file data with permissions
     """
-    entity = frappe.db.get_value(
+    entity = bor.db.get_value(
         "Drive File",
         {"is_active": 1, "name": entity_name},
         ENTITY_FIELDS,
         as_dict=1,
     )
     if not entity:
-        frappe.throw("We couldn't find what you're looking for.", {"error": frappe.NotFound})
+        bor.throw("We couldn't find what you're looking for.", {"error": bor.NotFound})
 
     entity["in_home"] = entity.team == get_default_team()
     user_access = get_user_access(entity)
     if user_access.get("read") == 0:
-        frappe.throw("You don't have access to this file.", frappe.PermissionError)
+        bor.throw("You don't have access to this file.", bor.PermissionError)
 
-    owner_info = frappe.db.get_value("User", entity.owner, ["user_image", "full_name"], as_dict=True) or {}
+    owner_info = bor.db.get_value("User", entity.owner, ["user_image", "full_name"], as_dict=True) or {}
     breadcrumbs = {"breadcrumbs": get_valid_breadcrumbs(entity.name, user_access)}
-    favourite = frappe.db.get_value(
+    favourite = bor.db.get_value(
         "Drive Favourite",
         {
             "entity": entity_name,
-            "user": frappe.session.user,
+            "user": bor.session.user,
         },
         ["entity as is_favourite"],
     )
@@ -190,17 +190,17 @@ def get_entity_with_permissions(entity_name):
     return_obj["share_count"] = default
 
     if entity.document:
-        k = frappe.get_doc("Drive Document", entity.document)
+        k = bor.get_doc("Drive Document", entity.document)
         entity_doc_content = k.as_dict()
         entity_doc_content.pop("name")
-        comments = frappe.get_all(
+        comments = bor.get_all(
             "Drive Comment",
             filters={"parenttype": "Drive File", "parent": entity.name},
             fields=["content", "owner", "creation", "name", "resolved"],
         )
 
         for k in comments:
-            k["replies"] = frappe.get_all(
+            k["replies"] = bor.get_all(
                 "Drive Comment",
                 filters={"parenttype": "Drive Comment", "parent": k["name"]},
                 fields=["content", "owner", "creation", "name"],
@@ -210,7 +210,7 @@ def get_entity_with_permissions(entity_name):
     return return_obj
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def get_shared_with_list(entity):
     """
     Return the list of users with whom this file or folder has been shared
@@ -218,26 +218,26 @@ def get_shared_with_list(entity):
     :param entity: Document-name of this file or folder
     :raises PermissionError: If the user does not have edit permissions
     :return: List of users, with permissions and last modified datetime
-    :rtype: list[frappe._dict]
+    :rtype: list[bor._dict]
     """
     if not user_has_permission(entity, "share"):
-        raise frappe.PermissionError("You do not have permission to check the shares.")
+        raise bor.PermissionError("You do not have permission to check the shares.")
 
-    permissions = frappe.db.get_all(
+    permissions = bor.db.get_all(
         "Drive Permission",
         filters=[["entity", "=", entity], ["user", "!=", ""], ["team", "!=", "1"]],
         order_by="user",
         fields=["user", "read", "write", "comment", "upload", "share"],
     )
 
-    owner = frappe.db.get_value("Drive File", entity, "owner")
+    owner = bor.db.get_value("Drive File", entity, "owner")
     permissions.insert(
         0,
-        frappe.db.get_value("User", owner, ["user_image", "full_name", "name as user"], as_dict=True),
+        bor.db.get_value("User", owner, ["user_image", "full_name", "name as user"], as_dict=True),
     )
 
     for p in permissions:
-        user_info = frappe.db.get_value("User", p.user, ["user_image", "full_name", "email"], as_dict=True)
+        user_info = bor.db.get_value("User", p.user, ["user_image", "full_name", "email"], as_dict=True)
         if user_info:
             p.update(user_info)
     return permissions
@@ -245,7 +245,7 @@ def get_shared_with_list(entity):
 
 def auto_delete_expired_perms():
     current_date = getdate()
-    expired_documents = frappe.get_list(
+    expired_documents = bor.get_list(
         "Drive Permission",
         filters=[
             ["valid_until", "is", "set"],
@@ -257,14 +257,14 @@ def auto_delete_expired_perms():
 
         def batch_delete_perms(docs):
             for d in docs:
-                frappe.delete_doc("Drive Permission", d.name)
+                bor.delete_doc("Drive Permission", d.name)
 
-        frappe.enqueue(batch_delete_perms, docs=expired_documents)
+        bor.enqueue(batch_delete_perms, docs=expired_documents)
 
 
 def user_has_permission(doc, ptype, user=None, team=0):
     if not user:
-        user = frappe.session.user
+        user = bor.session.user
     if user == "Administrator" or ptype == "create":
         return True
     if ptype not in ("read", "write", "comment", "share", "upload"):
@@ -277,15 +277,15 @@ def user_has_permission(doc, ptype, user=None, team=0):
 
 
 def user_has_permission_doc(doc, ptype, user=None):
-    entity = frappe.get_value("Drive File", {"document": doc.name}, "name")
+    entity = bor.get_value("Drive File", {"document": doc.name}, "name")
     if ptype == "create" or not entity:
         return True
     perm = user_has_permission(entity, ptype, user)
     return perm
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def toggle_allow_download(entity, val):
     if not user_has_permission(entity, "share"):
-        frappe.throw("You don't have permission for this action.", frappe.PermissionError)
-    frappe.db.set_value("Drive File", entity, "allow_download", val)
+        bor.throw("You don't have permission for this action.", bor.PermissionError)
+    bor.db.set_value("Drive File", entity, "allow_download", val)

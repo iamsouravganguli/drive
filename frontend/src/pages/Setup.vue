@@ -7,7 +7,7 @@
             class="flex flex-col items-center"
             @dblclick="window.location.href = '/f-login'"
           >
-            <FrappeDriveLogo class="inline-block h-12 w-12 rounded-md" />
+            <BorDriveLogo class="inline-block h-12 w-12 rounded-md" />
           </div>
           <div
             class="mx-auto w-full bg-surface-white px-4 py-8 sm:mt-6 sm:w-112 sm:rounded-2xl sm:px-6 sm:py-6 sm:shadow-2xl"
@@ -106,7 +106,7 @@
 <script setup>
 import { createResource, FormControl } from "frappe-ui"
 import { ref, computed } from "vue"
-import FrappeDriveLogo from "@/components/FrappeDriveLogo.vue"
+import BorDriveLogo from "@/components/BorDriveLogo.vue"
 import { useRoute } from "vue-router"
 import { useStore } from "vuex"
 import LoadingIndicator from "frappe-ui/src/components/LoadingIndicator.vue"

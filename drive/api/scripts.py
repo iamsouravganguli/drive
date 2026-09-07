@@ -1,11 +1,11 @@
-import frappe
+import bor
 
 from drive.api.product import is_admin
 from drive.utils import create_drive_file, default_team, get_home_folder, update_file_size
 from drive.utils.files import FileManager
 
 
-@frappe.whitelist()
+@bor.whitelist()
 @default_team
 def sync_preview(team, json=True):
     manager = FileManager()
@@ -18,16 +18,16 @@ def sync_preview(team, json=True):
     return sorted_files
 
 
-@frappe.whitelist()
+@bor.whitelist()
 @default_team
 def sync_from_disk(team):
     """
     One-way sync from disk to Drive. Ignores hidden files.
     """
     if not is_admin(team):
-        frappe.throw(
+        bor.throw(
             "You do not have permission to sync files from disk.",
-            frappe.PermissionError,
+            bor.PermissionError,
         )
 
     sorted_files = sync_preview(team, json=False)
@@ -38,7 +38,7 @@ def sync_from_disk(team):
         if not parent_path:
             return home_folder
         # Check if the parent folder exists
-        parent = frappe.get_value(
+        parent = bor.get_value(
             "Drive File",
             {"path": (parent_path + "/") if parent_path else "", "team": team},
             "name",
@@ -65,12 +65,12 @@ def sync_from_disk(team):
 
     for file, (file_size, last_modified, mime_type, actual_path) in sorted_files:
         parent_path = str(file.parent).strip("./")
-        parent = frappe.get_value(
+        parent = bor.get_value(
             "Drive File",
             {"path": parent_path + "/" if parent_path else "", "team": team},
             "name",
         )
-        parent = get_or_create_parent(parent_path, frappe.session.user)
+        parent = get_or_create_parent(parent_path, bor.session.user)
 
         files_added.append(
             create_drive_file(
@@ -82,7 +82,7 @@ def sync_from_disk(team):
                 last_modified=last_modified,
                 file_size=file_size,
                 is_group=mime_type == "folder",
-                owner=frappe.session.user,
+                owner=bor.session.user,
             )
         )
         update_file_size(parent, file_size)

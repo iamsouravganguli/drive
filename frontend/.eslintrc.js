@@ -7,7 +7,7 @@ module.exports = {
     // override/add rules settings here, such as:
     // 'vue/no-unused-vars': 'error'
     // "vue/require-default-prop": "off",
-    // Frappe ui
+    // Bor ui
     "vue/no-reserved-component-names": "off",
     "vue/multi-word-component-names": "off",
   },

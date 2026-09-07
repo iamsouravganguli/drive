@@ -1,6 +1,6 @@
 import json
 
-import frappe
+import bor
 from pypika import Criterion, CustomFunction, Order
 from pypika import functions as fn
 
@@ -9,20 +9,20 @@ from drive.utils.api import get_default_access
 
 from .permissions import ENTITY_FIELDS, get_user_access
 
-DriveUser = frappe.qb.DocType("User")
-UserGroupMember = frappe.qb.DocType("User Group Member")
-DriveFile = frappe.qb.DocType("Drive File")
-DrivePermission = frappe.qb.DocType("Drive Permission")
-Team = frappe.qb.DocType("Drive Team")
-TeamMember = frappe.qb.DocType("Drive Team Member")
-DriveFavourite = frappe.qb.DocType("Drive Favourite")
-Recents = frappe.qb.DocType("Drive Entity Log")
-DriveEntityTag = frappe.qb.DocType("Drive Entity Tag")
+DriveUser = bor.qb.DocType("User")
+UserGroupMember = bor.qb.DocType("User Group Member")
+DriveFile = bor.qb.DocType("Drive File")
+DrivePermission = bor.qb.DocType("Drive Permission")
+Team = bor.qb.DocType("Drive Team")
+TeamMember = bor.qb.DocType("Drive Team Member")
+DriveFavourite = bor.qb.DocType("Drive Favourite")
+Recents = bor.qb.DocType("Drive Entity Log")
+DriveEntityTag = bor.qb.DocType("Drive Entity Tag")
 
 Binary = CustomFunction("BINARY", ["expression"])
 
 
-@frappe.whitelist(allow_guest=True)
+@bor.whitelist(allow_guest=True)
 @default_team
 def files(
     team,
@@ -56,14 +56,14 @@ def files(
     if not entity_name and team:
         entity_name = get_home_folder(team)["name"]
 
-    user = frappe.session.user if frappe.session.user != "Guest" else ""
+    user = bor.session.user if bor.session.user != "Guest" else ""
     if entity_name:
-        entity = frappe.get_doc("Drive File", entity_name)
+        entity = bor.get_doc("Drive File", entity_name)
         # Verify that entity exists and is part of the team
         if not entity:
-            frappe.throw(
+            bor.throw(
                 f"Not found ({entity_name}) ",
-                frappe.exceptions.PageDoesNotExistError,
+                bor.exceptions.PageDoesNotExistError,
             )
 
         if not team == entity.team:
@@ -73,16 +73,16 @@ def files(
         user_access = get_user_access(entity, user)
 
         if not user_access["read"]:
-            frappe.throw(
+            bor.throw(
                 f"You don't have access.",
-                frappe.exceptions.PermissionError,
+                bor.exceptions.PermissionError,
             )
 
-    query = frappe.qb.from_(DriveFile).where(DriveFile.is_active == is_active)
+    query = bor.qb.from_(DriveFile).where(DriveFile.is_active == is_active)
     if shared:
         if shared == "by" or shared == "with":
             cond = (DrivePermission.entity == DriveFile.name) & (
-                (DrivePermission.user if shared == "with" else DrivePermission.owner) == frappe.session.user
+                (DrivePermission.user if shared == "with" else DrivePermission.owner) == bor.session.user
             )
         elif shared == "public":
             cond = (DrivePermission.entity == DriveFile.name) & (DrivePermission.user == "")
@@ -114,25 +114,25 @@ def files(
         query = query.right_join(DriveFavourite)
     else:
         query = query.left_join(DriveFavourite)
-    query = query.on((DriveFavourite.entity == DriveFile.name) & (DriveFavourite.user == frappe.session.user)).select(
+    query = query.on((DriveFavourite.entity == DriveFile.name) & (DriveFavourite.user == bor.session.user)).select(
         DriveFavourite.name.as_("is_favourite")
     )
 
     if recents_only:
         query = (
             query.right_join(Recents)
-            .on((Recents.entity_name == DriveFile.name) & (Recents.user == frappe.session.user))
+            .on((Recents.entity_name == DriveFile.name) & (Recents.user == bor.session.user))
             .orderby(Recents.last_interaction, order=Order.desc)
         )
     else:
         query = (
             query.left_join(Recents)
-            .on((Recents.entity_name == DriveFile.name) & (Recents.user == frappe.session.user))
+            .on((Recents.entity_name == DriveFile.name) & (Recents.user == bor.session.user))
             .orderby(DriveFile[field], order=Order.asc if ascending else Order.desc)
         )
 
     if not is_active:
-        query = query.where(DriveFile.owner == frappe.session.user)
+        query = query.where(DriveFile.owner == bor.session.user)
     if search:
         # escape wildcards or lower() depending on DB
         query = query.where(DriveFile.title.like(f"%{search}%"))
@@ -159,13 +159,13 @@ def files(
     res = query.run(as_dict=True)
 
     child_count_query = (
-        frappe.qb.from_(DriveFile)
+        bor.qb.from_(DriveFile)
         .where((DriveFile.team == team) & (DriveFile.is_active == 1))
         .select(DriveFile.parent_entity, fn.Count("*").as_("child_count"))
         .groupby(DriveFile.parent_entity)
     )
     share_query = (
-        frappe.qb.from_(DriveFile)
+        bor.qb.from_(DriveFile)
         .right_join(DrivePermission)
         .on(DrivePermission.entity == DriveFile.name)
         .where((DrivePermission.user != "") & (DrivePermission.user != "$TEAM"))
@@ -173,9 +173,9 @@ def files(
         .groupby(DriveFile.name)
     )
     public_files_query = (
-        frappe.qb.from_(DrivePermission).where(DrivePermission.user == "").select(DrivePermission.entity)
+        bor.qb.from_(DrivePermission).where(DrivePermission.user == "").select(DrivePermission.entity)
     )
-    team_files_query = frappe.qb.from_(DrivePermission).where(DrivePermission.team == 1).select(DrivePermission.entity)
+    team_files_query = bor.qb.from_(DrivePermission).where(DrivePermission.team == 1).select(DrivePermission.entity)
     public_files = set(k[0] for k in public_files_query.run())
     team_files = set(k[0] for k in team_files_query.run())
 
@@ -211,9 +211,9 @@ def files(
     return res
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def get_transfers():
-    transfers = frappe.get_list(
-        "Drive Transfer", filters={"owner": frappe.session.user}, fields=["title", "file_size", "creation", "name"]
+    transfers = bor.get_list(
+        "Drive Transfer", filters={"owner": bor.session.user}, fields=["title", "file_size", "creation", "name"]
     )
     return transfers

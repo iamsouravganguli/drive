@@ -4,7 +4,7 @@
       <div class="relative h-full">
         <div class="relative z-10 mx-auto pt-8 sm:w-max sm:pt-20">
           <div class="flex flex-col items-center">
-            <FrappeDriveLogo class="inline-block h-12 w-12 rounded-md" />
+            <BorDriveLogo class="inline-block h-12 w-12 rounded-md" />
           </div>
           <div
             class="mx-auto w-full bg-surface-white px-4 p-8 sm:mt-6 sm:w-112 sm:rounded-2xl sm:px-6 py-6 sm:shadow-2xl"
@@ -25,7 +25,7 @@
                 {{
                   !isLogin
                     ? params.get("t")
-                      ? "Powered by Frappe Drive."
+                      ? "Powered by Bor Drive."
                       : "Welcome to Drive."
                     : "Welcome back!"
                 }}
@@ -71,7 +71,7 @@
                     I accept the
                     <a
                       class="!text-ink-gray-7"
-                      href="https://frappecloud.com/policies"
+                      href="https://borcloud.local/policies"
                       target="_blank"
                     >
                       Terms and Policies
@@ -207,7 +207,7 @@
 <script setup>
 import { createResource, ErrorMessage, FormControl } from "frappe-ui"
 import { ref, onMounted, computed } from "vue"
-import FrappeDriveLogo from "@/components/FrappeDriveLogo.vue"
+import BorDriveLogo from "@/components/BorDriveLogo.vue"
 import { toast } from "@/utils/toasts"
 import { useRoute } from "vue-router"
 import { settings } from "@/resources/permissions"

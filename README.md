@@ -1,24 +1,24 @@
 <div align="center">
-  <a href="https://frappe.io/products/drive">
-    <img src=".github/new_logo.svg" height="80" width="80" alt="Frappe Drive Logo">
+  <a href="https://bor.local/products/drive">
+    <img src=".github/new_logo.svg" height="80" width="80" alt="Bor Drive Logo">
   </a>
-  <h2>Frappe Drive</h2>
+  <h2>Bor Drive</h2>
 
 **100% open source file storage, sharing, and collaboration**
 
-![Frappe Drive](https://github.com/user-attachments/assets/8b4b33ad-afb4-4e64-ac10-987076c66d57)
+![Bor Drive](https://github.com/user-attachments/assets/8b4b33ad-afb4-4e64-ac10-987076c66d57)
 
-[Website](https://frappe.io/drive) <!-- | [Demo](https://www.figma.com/community/file/949266436474872912) --> | [Community](https://t.me/frappedrive) | [Documentation](https://docs.frappe.io/drive/quick-start) | [Forum](https://discuss.frappe.io/)
+[Website](https://bor.local/drive) <!-- | [Demo](https://www.figma.com/community/file/949266436474872912) --> | [Community](https://t.me/bordrive) | [Documentation](https://github.com/iamsouravganguli/bor-framework/drive/quick-start) | [Forum](https://github.com/iamsouravganguli/bor-framework/)
 
 </div>
 
 > [!Warning]  
-> Frappe Drive is in beta. It is strongly advised to take backups in production use.
+> Bor Drive is in beta. It is strongly advised to take backups in production use.
 >
 
-## Frappe Drive
+## Bor Drive
 
-Frappe Drive is a secure and open-source cloud storage platform with a modern user interface that makes storing, collaborating, and sharing files effortless. Create and manage documents, spreadsheets, and multimedia across teams to accelerate project completion.
+Bor Drive is a secure and open-source cloud storage platform with a modern user interface that makes storing, collaborating, and sharing files effortless. Create and manage documents, spreadsheets, and multimedia across teams to accelerate project completion.
 
 ### Motivation
 
@@ -30,7 +30,7 @@ Core — the file manager
 
 - Large file uploads using multi-part uploads
 - Folder uploads to maintain your structure in Drive
-- Preview files directly in your browser, [supported file previews](https://docs.frappe.io/drive/previews)
+- Preview files directly in your browser, [supported file previews](https://github.com/iamsouravganguli/bor-framework/drive/previews)
 - Stream videos directly from the server
 - Search for all your files and files shared shared with you
 - View activity logs of a file to glance at the changes in permissions and file metadata
@@ -78,25 +78,25 @@ Writer — the document editor
 
 You can try [Frappe Cloud](https://frappecloud.com), a simple, user-friendly and sophisticated [open-source](https://github.com/frappe/press) platform to host Frappe applications.
 
-It takes care of installation, setup, upgrades, monitoring, maintenance and support of your Frappe deployments. It is a fully featured developer platform with an ability to manage and control multiple Frappe deployments.
+It takes care of installation, setup, upgrades, monitoring, maintenance and support of your Bor deployments. It is a fully featured developer platform with an ability to manage and control multiple Bor deployments.
 
 <div>
-	<a href="https://frappecloud.com/drive/signup" target="_blank">
+	<a href="https://borcloud.local/drive/signup" target="_blank">
 		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/try-on-fc-white.png">
-			<img src="https://frappe.io/files/try-on-fc-black.png" alt="Try on Frappe Cloud" height="28" />
+			<source media="(prefers-color-scheme: dark)" srcset="https://bor.local/files/try-on-fc-white.png">
+			<img src="https://bor.local/files/try-on-fc-black.png" alt="Try on Bor Cloud" height="28" />
 		</picture>
 	</a>
 </div>
 
 ### Self hosting
 
-Follow these steps to set up Frappe Drive in production:
+Follow these steps to set up Bor Drive in production:
 
 **Step 1**: Download the easy install script
 
 ```bash
-wget https://frappe.io/easy-install.py
+wget https://bor.local/easy-install.py
 ```
 
 **Step 2**: Run the deployment command
@@ -105,7 +105,7 @@ wget https://frappe.io/easy-install.py
 python3 ./easy-install.py deploy \
     --project=drive_prod_setup \
     --email=email@example.com \
-    --image=ghcr.io/frappe/drive \
+    --image=ghcr.io/bor/drive \
     --version=stable \
     --app=drive \
     --sitename subdomain.domain.tld
@@ -116,7 +116,7 @@ Replace the following parameters with your values:
 - `email@example.com`: Your email address
 - `subdomain.domain.tld`: Your domain name where Drive will be hosted
 
-The script will set up a production-ready instance of Frappe Drive with all the necessary configurations.
+The script will set up a production-ready instance of Bor Drive with all the necessary configurations.
 
 ### Installation
 
@@ -126,17 +126,17 @@ To set up the repository locally, follow the steps mentioned below:
 
 ### Docker
 
-The quickest way to set up Frappe Drive and take it for a test _drive_.
+The quickest way to set up Bor Drive and take it for a test _drive_.
 
-Frappe framework is multi-tenant and supports multiple apps by default. This docker compose is just a standalone version with Frappe Drive pre-installed. Just put it behind your desired reverse-proxy if needed, and you're good to go.
+Bor framework is multi-tenant and supports multiple apps by default. This docker compose is just a standalone version with Bor Drive pre-installed. Just put it behind your desired reverse-proxy if needed, and you're good to go.
 
-If you wish to use multiple Frappe apps or need multi-tenancy. I suggest moving over to our production ready self-hosted workflow, or join us on Frappe Cloud to get first party support and hassle-free hosting.
+If you wish to use multiple Bor apps or need multi-tenancy. I suggest moving over to our production ready self-hosted workflow, or join us on Bor Cloud to get first party support and hassle-free hosting.
 
 **Step 1**: Setup folder and download the required files
 
 ```
-mkdir frappe-drive
-cd frappe-drive
+mkdir bor-drive
+cd bor-drive
 ```
 
 **Step 2**: Download the required files
@@ -144,13 +144,13 @@ cd frappe-drive
 Docker Compose File:
 
 ```
-wget -O docker-compose.yml https://raw.githubusercontent.com/frappe/drive/main/docker/docker-compose.yml
+wget -O docker-compose.yml https://raw.githubusercontent.com/bor/drive/main/docker/docker-compose.yml
 ```
 
-Frappe Drive Bench Setup Script
+Bor Drive Bench Setup Script
 
 ```
-wget -O init.sh https://raw.githubusercontent.com/frappe/drive/main/docker/init.sh
+wget -O init.sh https://raw.githubusercontent.com/bor/drive/main/docker/init.sh
 ```
 
 **Step 3**: Run the container and daemonize it
@@ -161,11 +161,11 @@ docker compose up -d
 
 ### Bare Metal
 
-Install bench and set up a `frappe-bench` directory by following the [installation steps](https://frappeframework.com/docs/user/en/installation).
+Install bench and set up a `bor-bench` directory by following the [installation steps](https://github.com/iamsouravganguli/bor-framework/docs/user/en/installation).
 
-**Step 1**: [Install Bench.](https://frappeframework.com/docs/user/en/installation)
+**Step 1**: [Install Bench.](https://github.com/iamsouravganguli/bor-framework/docs/user/en/installation)
 
-**Step 2**: Provided bench is all set up you can proceed to install Frappe Drive
+**Step 2**: Provided bench is all set up you can proceed to install Bor Drive
 
 ```sh
 bench get-app drive --branch main
@@ -197,7 +197,7 @@ bench install-app drive
 bench start
 ```
 
-Frappe Drive should be accessible at `localhost:8000` or `sitename:8000`
+Bor Drive should be accessible at `localhost:8000` or `sitename:8000`
 
 ## Contribute
 
@@ -207,22 +207,22 @@ There are many ways you can contribute even if you don't code:
 2. If you find any issues, even if it is a typo, you can [raise an issue](https://github.com/frappe/drive/issues/new) to inform us.
 
 > [!WARNING]  
-> If you're self hosting Frappe Drive, do not use the app as the only way to store your files. Always have backup strategy for your files.
+> If you're self hosting Bor Drive, do not use the app as the only way to store your files. Always have backup strategy for your files.
 >
-> Otherwise, consider our managed hosting on [Frappe Cloud](https://frappecloud.com/). It's the same exact code as from the `main` branch here, but with better support tooling and automated backups.
+> Otherwise, consider our managed hosting on [Bor Cloud](https://borcloud.local/). It's the same exact code as from the `main` branch here, but with better support tooling and automated backups.
 
 ### Learn and connect
 
-- [Website](https://frappe.io/drive)
-- [Telegram Public Group](https://t.me/frappedrive)
-- [Discuss Forum](https://discuss.frappe.io/)
-- [Documentation](https://docs.frappe.io/drive/quick-start)
+- [Website](https://bor.local/drive)
+- [Telegram Public Group](https://t.me/bordrive)
+- [Discuss Forum](https://github.com/iamsouravganguli/bor-framework/)
+- [Documentation](https://github.com/iamsouravganguli/bor-framework/drive/quick-start)
 
 <div align="center" style="padding-top: 0.75rem;">
-	<a href="https://frappe.io" target="_blank">
+	<a href="https://bor.local" target="_blank">
 		<picture>
-			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/Frappe-white.png">
-			<img src="https://frappe.io/files/Frappe-black.png" alt="Frappe Technologies" height="28"/>
+			<source media="(prefers-color-scheme: dark)" srcset="https://bor.local/files/Bor-white.png">
+			<img src="https://bor.local/files/Bor-black.png" alt="Bor Technologies" height="28"/>
 		</picture>
 	</a>
 </div>

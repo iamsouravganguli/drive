@@ -1,14 +1,14 @@
 import FileUploaderComponent from "./FileUploader.vue";
-import FrappeDriveLogo from "./FrappeDriveLogo.vue";
+import BorDriveLogo from "./BorDriveLogo.vue";
 import { createApp } from "vue";
 
 DRIVE_UPLOADER = {
   label: "Drive",
-  icon: FrappeDriveLogo,
+  icon: BorDriveLogo,
   action: async ({ dialog, uploader, ...obj }) => {
     dialog.hide();
-    const d = new frappe.ui.Dialog({
-      title: "Upload from Frappe Drive",
+    const d = new bor.ui.Dialog({
+      title: "Upload from Bor Drive",
       primary_action_label: "Upload",
       primary_action() {
         file = component.selected_node;
@@ -23,10 +23,10 @@ DRIVE_UPLOADER = {
     });
 
     // Fetch all teams first
-    const teamsResp = await frappe.call("drive.api.permissions.get_teams");
+    const teamsResp = await bor.call("drive.api.permissions.get_teams");
     const teams = teamsResp.message || [];
     if (!teams.length) {
-      return frappe.msgprint(__("No teams available"));
+      return bor.msgprint(__("No teams available"));
     }
     let app = createApp(FileUploaderComponent);
     const component = app.mount(d.body);
@@ -35,7 +35,7 @@ DRIVE_UPLOADER = {
 };
 
 (async () => {
-  await frappe.require("file_uploader.bundle.js");
-  if (frappe.ui.FileUploader?.UploadOptions)
-    frappe.ui.FileUploader.UploadOptions.push(DRIVE_UPLOADER);
+  await bor.require("file_uploader.bundle.js");
+  if (bor.ui.FileUploader?.UploadOptions)
+    bor.ui.FileUploader.UploadOptions.push(DRIVE_UPLOADER);
 })();

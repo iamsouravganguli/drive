@@ -51,7 +51,7 @@
           v-if="
             !collab ||
             editorExtensions.find((k) => k.name === 'collaborationCursor') ||
-            !isFrappeDoc
+            !isBorDoc
           "
           :key="editorExtensions.length"
           ref="textEditor"
@@ -190,7 +190,7 @@ const props = defineProps({
   entity: Object,
   settings: Object,
   editable: Boolean,
-  isFrappeDoc: Boolean,
+  isBorDoc: Boolean,
   showResolved: Boolean,
   users: Object,
   currentVersion: { required: false, type: Object },
@@ -310,15 +310,15 @@ if (collab.value) {
   if (yjsContent.value) Y.applyUpdate(doc, yjsContent.value)
 
   prov = new WebrtcProvider("fdoc-" + props.entity.name, doc, {
-    signaling: ["wss://signal.frappe.cloud"],
+    signaling: ["wss://signal.bor.cloud"],
     peerOpts: {
       config: {
         iceServers: [
           { urls: "stun:stun.l.google.com:19302" },
           {
             urls: [
-              "turn:signal.frappe.cloud:3478?transport=udp",
-              "turn:signal.frappe.cloud:3478?transport=tcp",
+              "turn:signal.bor.cloud:3478?transport=udp",
+              "turn:signal.bor.cloud:3478?transport=tcp",
             ],
             username: "turnuser",
             credential: "turnpass",
@@ -390,7 +390,7 @@ const menuButtons = computed(() =>
     ["Bullet List", "Numbered List", "Task List"],
     "Separator",
     ["Align Left", "Align Center", "Align Right"],
-    ...(props.isFrappeDoc
+    ...(props.isBorDoc
       ? [
           "Separator",
           {
@@ -552,7 +552,7 @@ emitter.on("create-version", (title) => {
 })
 
 onMounted(() => {
-  if (props.entity.mime_type === "frappe_doc") {
+  if (props.entity.mime_type === "bor_doc") {
     const orderedComments = getOrderedComments(editor.value.state.doc)
     comments.value = props.entity.comments.toSorted((a, b) => {
       const pos1 = orderedComments.findIndex((k) => k.id === a.name)

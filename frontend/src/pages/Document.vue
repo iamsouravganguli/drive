@@ -50,9 +50,9 @@
     />
   </Teleport>
   <Navbar
-    v-if="!inIframe && (docSettings?.doc || !isFrappeDoc)"
+    v-if="!inIframe && (docSettings?.doc || !isBorDoc)"
     :root-resource="document"
-    :actions="isFrappeDoc ? navBarActions : null"
+    :actions="isBorDoc ? navBarActions : null"
   >
     <template
       #breadcrumbs
@@ -91,7 +91,7 @@
       @save-document="saveDocument"
     />
     <TextEditor
-      v-if="!isFrappeDoc || docSettings?.doc?.settings"
+      v-if="!isBorDoc || docSettings?.doc?.settings"
       ref="editor"
       v-model:edited="edited"
       v-model:raw-content="rawContent"
@@ -100,7 +100,7 @@
       v-model:current="current"
       :entity
       :editable="inIframe ? false : editable"
-      :is-frappe-doc
+      :is-bor-doc
       :settings
       :users="allUsers.data || []"
       :show-resolved
@@ -217,14 +217,14 @@ watch(showVersions, (v) => {
   if (!v) current.value = null
 })
 let docSettings, globalSettings
-const isFrappeDoc = computed(
-  () => entity.value && entity.value.mime_type === "frappe_doc"
+const isBorDoc = computed(
+  () => entity.value && entity.value.mime_type === "bor_doc"
 )
 
 const saveDocument = (comment = false) => {
   if ((!comment && !edited.value) || current.value) return
   if (entity.value.write || (comment && entity.value.comment)) {
-    if (isFrappeDoc.value) {
+    if (isBorDoc.value) {
       const params = {
         entity_name: props.entityName,
         doc_name: entity.value.document,
@@ -258,7 +258,7 @@ const onSuccess = (data) => {
   if (data.content) yjsContent.value = toUint8Array(data.content)
   lastFetched.value = Date.now()
   setBreadCrumbs(data)
-  if (data.mime_type === "frappe_doc") {
+  if (data.mime_type === "bor_doc") {
     docSettings = useDoc({
       doctype: "Drive Document",
       name: data.document,
@@ -281,7 +281,7 @@ const onSuccess = (data) => {
   }
 }
 const settings = computed(() => {
-  if (!isFrappeDoc.value) return {}
+  if (!isBorDoc.value) return {}
   for (const [k, v] of Object.entries(docSettings.doc?.settings || {})) {
     if (v === "global") delete docSettings.doc?.settings[k]
   }

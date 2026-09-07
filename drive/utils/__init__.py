@@ -2,10 +2,10 @@ import inspect
 from datetime import datetime
 from functools import wraps
 
-import frappe
+import bor
 from bs4 import BeautifulSoup
 
-DriveFile = frappe.qb.DocType("Drive File")
+DriveFile = bor.qb.DocType("Drive File")
 MIME_LIST_MAP = {
     "Image": [
         "image/png",
@@ -29,10 +29,10 @@ MIME_LIST_MAP = {
         "application/vnd.oasis.opendocument.text",
         "application/vnd.apple.pages",
         "application/x-abiword",
-        "frappe_doc",
+        "bor_doc",
     ],
-    "Frappe Document": [
-        "frappe_doc",
+    "Bor Document": [
+        "bor_doc",
     ],
     "Spreadsheet": [
         "application/vnd.ms-excel",
@@ -43,7 +43,7 @@ MIME_LIST_MAP = {
         "application/vnd.apple.numbers",
     ],
     "Presentation": [
-        "frappe/slides",
+        "bor/slides",
         "application/vnd.ms-powerpoint",
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
         "application/vnd.oasis.opendocument.presentation",
@@ -86,26 +86,26 @@ MIME_LIST_MAP = {
 
 def get_home_folder(team):
     ls = (
-        frappe.qb.from_(DriveFile)
+        bor.qb.from_(DriveFile)
         .where(((DriveFile.team == team) & DriveFile.parent_entity.isnull()))
         .select(DriveFile.name, DriveFile.path)
         .run(as_dict=True)
     )
     if not ls:
         error_msg = f"This team ({team}) doesn't exist - please create in Desk."
-        team_names = frappe.get_all(
+        team_names = bor.get_all(
             "Drive Team Member",
             pluck="parent",
             filters=[
                 ["parenttype", "=", "Drive Team"],
-                ["user", "=", frappe.session.user],
+                ["user", "=", bor.session.user],
             ],
         )
         if team_names:
-            error_msg += f"<br /><br />Or maybe you want <a class='text-black' href='/drive/t/{team_names[0]}'>{frappe.db.get_value('Drive Team', team_names[0], 'title')}</a>?"
+            error_msg += f"<br /><br />Or maybe you want <a class='text-black' href='/drive/t/{team_names[0]}'>{bor.db.get_value('Drive Team', team_names[0], 'title')}</a>?"
         if not team_names:
             error_msg += f"<br /><br />Please <a class='text-black' href='/drive/setup'>setup</a> an account."
-        frappe.throw(error_msg, {"error": frappe.NotFound})
+        bor.throw(error_msg, {"error": bor.NotFound})
     return ls[0]
 
 
@@ -114,8 +114,8 @@ def get_ancestors_of(entity_name):
     Return all parent nodes till the root node
     """
     # CONCAT_WS('/', t.title, gp.path),
-    entity_name = frappe.db.escape(entity_name)
-    result = frappe.db.sql(
+    entity_name = bor.db.escape(entity_name)
+    result = bor.db.sql(
         f"""
         WITH RECURSIVE generated_path as (
         SELECT
@@ -135,7 +135,7 @@ def get_ancestors_of(entity_name):
     """,
         as_dict=0,
     )
-    # Match the output of frappe/nested.py get_ancestors_of
+    # Match the output of bor/nested.py get_ancestors_of
     flattened_list = [item for sublist in result for item in sublist]
     flattened_list.pop(0)
     return flattened_list
@@ -163,10 +163,10 @@ def generate_upward_path(entity_name, user=None, team=0):
     Given an ID traverse upwards till the root node
     Stops when parent_drive_file IS NULL
     """
-    entity = frappe.db.escape(entity_name)
+    entity = bor.db.escape(entity_name)
     if user is None:
-        user = frappe.session.user
-    user = frappe.db.escape(user if user != "Guest" else "")
+        user = bor.session.user
+    user = bor.db.escape(user if user != "Guest" else "")
 
     filter_: str
     if team:
@@ -174,7 +174,7 @@ def generate_upward_path(entity_name, user=None, team=0):
     else:
         filter_ = f"p.user = {user}"
 
-    result = frappe.db.sql(
+    result = bor.db.sql(
         f"""WITH RECURSIVE
             generated_path as (
                 SELECT
@@ -241,7 +241,7 @@ def get_valid_breadcrumbs(entity_name, user_access):
         lose_access = max(next((i for i, k in enumerate(path[::-1]) if not k["read"]), 0) for path in paths if path)
         return paths[0][-lose_access:]
     except:
-        frappe.log_error("Breadcrumbs errored out", (entity_name, user_access, frappe.session.user, paths))
+        bor.log_error("Breadcrumbs errored out", (entity_name, user_access, bor.session.user, paths))
         return paths[0] if len(paths) else []
 
 
@@ -258,11 +258,11 @@ def get_file_type(r):
 
 
 def update_file_size(entity, delta):
-    doc = frappe.get_doc("Drive File", entity)
+    doc = bor.get_doc("Drive File", entity)
     while doc.parent_entity:
         doc.file_size += delta
         doc.save(ignore_permissions=True)
-        doc = frappe.get_doc("Drive File", doc.parent_entity)
+        doc = bor.get_doc("Drive File", doc.parent_entity)
     # Update root
     doc.file_size += delta
     doc.save(ignore_permissions=True)
@@ -274,15 +274,15 @@ def if_folder_exists(team, folder_name, parent):
         "is_group": 1,
         "is_active": 1,
         "team": team,
-        "owner": frappe.session.user,
+        "owner": bor.session.user,
         "parent_entity": parent,
     }
-    existing_folder = frappe.db.get_value("Drive File", values, ["name", "title", "is_group", "is_active"], as_dict=1)
+    existing_folder = bor.db.get_value("Drive File", values, ["name", "title", "is_group", "is_active"], as_dict=1)
 
     if existing_folder:
         return existing_folder.name
     else:
-        d = frappe.get_doc({"doctype": "Drive File", **values, "_modified": frappe.utils.now_datetime()})
+        d = bor.get_doc({"doctype": "Drive File", **values, "_modified": bor.utils.now_datetime()})
         d.insert()
         return d.name
 
@@ -299,7 +299,7 @@ def create_drive_file(
     is_group=False,
     owner=None,
 ):
-    drive_file = frappe.get_doc(
+    drive_file = bor.get_doc(
         {
             "doctype": "Drive File",
             "team": team,
@@ -309,7 +309,7 @@ def create_drive_file(
             "mime_type": mime_type,
             "document": document,
             "is_group": is_group,
-            "_modified": (datetime.fromtimestamp(last_modified) if last_modified else frappe.utils.now()),
+            "_modified": (datetime.fromtimestamp(last_modified) if last_modified else bor.utils.now()),
         }
     )
     drive_file.flags.file_created = True
@@ -347,9 +347,9 @@ def strip_comment_spans(html: str) -> str:
     return str(soup)
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def get_default_team(with_file=False):
-    default_team = frappe.get_value("Drive Team", {"owner": frappe.session.user, "personal": 1}, "name")
+    default_team = bor.get_value("Drive Team", {"owner": bor.session.user, "personal": 1}, "name")
     if with_file:
         file = get_home_folder(default_team)
         return {"team": default_team, "file": file.name}
@@ -359,7 +359,7 @@ def get_default_team(with_file=False):
 def default_team(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # Handle weird frappe thing
+        # Handle weird bor thing
         if "cmd" in kwargs:
             kwargs.pop("cmd")
 
@@ -383,15 +383,15 @@ def get_teams(user=None, details=None, exclude_personal=True):
     Returns all the teams that the current user is part of.
     """
     if not user:
-        user = frappe.session.user
+        user = bor.session.user
 
-    teams = frappe.get_all(
+    teams = bor.get_all(
         "Drive Team Member",
         pluck="parent",
         filters=[["parenttype", "=", "Drive Team"], ["user", "=", user]],
     )
     if details:
-        teams_info = {team: frappe.get_doc("Drive Team", team) for team in teams}
+        teams_info = {team: bor.get_doc("Drive Team", team) for team in teams}
         if exclude_personal:
             return {t: team for t, team in teams_info.items() if not team.personal}
         return teams_info
@@ -400,12 +400,12 @@ def get_teams(user=None, details=None, exclude_personal=True):
 
 def update_clients(entity_name, team, type, current_client=None):
     try:
-        clients = frappe.get_list("Drive Desktop Client", {"team": team}, pluck="name")
+        clients = bor.get_list("Drive Desktop Client", {"team": team}, pluck="name")
         for n in clients:
             if n == current_client:
                 continue
-            client = frappe.get_doc("Drive Desktop Client", n)
-            update = frappe.get_doc(
+            client = bor.get_doc("Drive Desktop Client", n)
+            update = bor.get_doc(
                 {
                     "doctype": "Drive File Update",
                     "type": type,
@@ -416,4 +416,4 @@ def update_clients(entity_name, team, type, current_client=None):
             client.save()
     except BaseException as e:
         print(e)
-        frappe.log_error("There was an error updating the desktop client:", e)
+        bor.log_error("There was an error updating the desktop client:", e)

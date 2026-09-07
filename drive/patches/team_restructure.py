@@ -2,7 +2,7 @@ import shutil
 import time
 from pathlib import Path
 
-import frappe
+import bor
 
 
 def execute():
@@ -11,24 +11,24 @@ def execute():
     )
     time.sleep(120)
 
-    frappe.reload_doc("Drive", "doctype", "Drive Team Member")
-    frappe.reload_doc("Drive", "doctype", "Drive Team")
-    frappe.reload_doc("Drive", "doctype", "Drive File")
-    frappe.reload_doc("Drive", "doctype", "Drive Permission")
-    frappe.reload_doc("Drive", "doctype", "Drive Entity Activity Log")
+    bor.reload_doc("Drive", "doctype", "Drive Team Member")
+    bor.reload_doc("Drive", "doctype", "Drive Team")
+    bor.reload_doc("Drive", "doctype", "Drive File")
+    bor.reload_doc("Drive", "doctype", "Drive Permission")
+    bor.reload_doc("Drive", "doctype", "Drive Entity Activity Log")
 
-    if frappe.db.get_list("Drive Team"):
+    if bor.db.get_list("Drive Team"):
         print("A Drive Team already exists, going ahead might corrupt your database.")
         return
 
-    frappe.db.delete("Drive Team")
-    frappe.db.delete("Drive File")
-    frappe.db.delete("Drive Permission")
-    team = frappe.get_doc({"doctype": "Drive Team", "title": "Drive"})
+    bor.db.delete("Drive Team")
+    bor.db.delete("Drive File")
+    bor.db.delete("Drive Permission")
+    team = bor.get_doc({"doctype": "Drive Team", "title": "Drive"})
     team.insert()
 
-    home_folder = frappe.db.get_list("Drive File", {"team": team.name})[0].name
-    entities = frappe.db.sql("select * from `tabDrive Entity`", as_dict=True)
+    home_folder = bor.db.get_list("Drive File", {"team": team.name})[0].name
+    entities = bor.db.sql("select * from `tabDrive Entity`", as_dict=True)
     homes = []
     translate = {}
 
@@ -38,7 +38,7 @@ def execute():
                 homes.append(k["name"])
                 continue
             k["old_name"] = k.pop("name")
-            doc = frappe.get_doc({"doctype": "Drive File", **k, "team": team.name, "is_private": 1})
+            doc = bor.get_doc({"doctype": "Drive File", **k, "team": team.name, "is_private": 1})
             if k["path"]:
                 path_els = k["path"].split("/")
                 if "files" in path_els:
@@ -46,33 +46,33 @@ def execute():
                 else:
                     doc.path = home_folder + "/" + "/".join(path_els[path_els.index("private") + 2 :])
                 p = Path(k["path"])
-                old_path = frappe.get_site_path("/".join(str(p).split("/")[1:]))
+                old_path = bor.get_site_path("/".join(str(p).split("/")[1:]))
                 try:
-                    shutil.copy(old_path, str(Path(frappe.get_site_path("private/files")) / doc.path))
+                    shutil.copy(old_path, str(Path(bor.get_site_path("private/files")) / doc.path))
                 except:
                     print(
                         "Moving failed for",
                         old_path,
                         "->",
-                        Path(frappe.get_site_path("private/files")) / (doc.path),
+                        Path(bor.get_site_path("private/files")) / (doc.path),
                     )
             doc.insert()
 
             translate[k["old_name"]] = doc.name
         except Exception as e:
             print(f"{k['title']} failed, with:", e)
-    frappe.db.commit()
+    bor.db.commit()
 
     for k in entities:
         if not k.get("old_name") in translate:
             continue
         name = translate[k["old_name"]]
-        frappe.db.set_value("Drive File", name, "owner", k["owner"], update_modified=False)
-        frappe.db.set_value("Drive File", name, "creation", k["creation"], update_modified=False)
-        frappe.db.set_value("Drive File", name, "modified", k["modified"], update_modified=False)
-        frappe.db.set_value("Drive File", name, "modified_by", k["modified_by"], update_modified=False)
+        bor.db.set_value("Drive File", name, "owner", k["owner"], update_modified=False)
+        bor.db.set_value("Drive File", name, "creation", k["creation"], update_modified=False)
+        bor.db.set_value("Drive File", name, "modified", k["modified"], update_modified=False)
+        bor.db.set_value("Drive File", name, "modified_by", k["modified_by"], update_modified=False)
         if k["parent_drive_entity"] in homes:
-            frappe.db.set_value(
+            bor.db.set_value(
                 "Drive File",
                 name,
                 "parent_entity",
@@ -80,7 +80,7 @@ def execute():
                 update_modified=False,
             )
         else:
-            frappe.db.set_value(
+            bor.db.set_value(
                 "Drive File",
                 name,
                 "parent_entity",
@@ -88,13 +88,13 @@ def execute():
                 update_modified=False,
             )
 
-    shares = frappe.db.sql("select * from `tabDrive DocShare`", as_dict=True)
+    shares = bor.db.sql("select * from `tabDrive DocShare`", as_dict=True)
     for s in shares:
         entity = translate.get(s["share_name"])
         if not entity:
             continue
         elif s["everyone"]:
-            frappe.db.set_value(
+            bor.db.set_value(
                 "Drive File",
                 entity,
                 "is_private",
@@ -102,7 +102,7 @@ def execute():
                 update_modified=False,
             )
         else:
-            frappe.get_doc(
+            bor.get_doc(
                 {
                     "doctype": "Drive Permission",
                     "user": "" if s.public else s.user_name,
@@ -124,10 +124,10 @@ def execute():
     }
 
     for doctype, field in RENAME_MAP.items():
-        for k in frappe.get_list(doctype, fields=["name", field]):
+        for k in bor.get_list(doctype, fields=["name", field]):
             if k[field] not in translate:
                 continue
-            frappe.db.set_value(
+            bor.db.set_value(
                 doctype,
                 k["name"],
                 field,

@@ -7,7 +7,7 @@
       title: 'Drive',
       subtitle: $store.state.user.fullName,
       menuItems: settingsItems,
-      logo: FrappeDriveLogo,
+      logo: BorDriveLogo,
     }"
     :sections="sidebarItems"
   >
@@ -52,7 +52,7 @@
   />
 </template>
 <script setup>
-import FrappeDriveLogo from "@/components/FrappeDriveLogo.vue"
+import BorDriveLogo from "@/components/BorDriveLogo.vue"
 
 import StorageBar from "./StorageBar.vue"
 import { Sidebar, createResource } from "frappe-ui"
@@ -147,12 +147,12 @@ const settingsItems = computed(() => [
       {
         icon: LucideBook,
         label: __("Documentation"),
-        onClick: () => window.open("https://docs.frappe.io/drive", "_blank"),
+        onClick: () => window.open("https://github.com/iamsouravganguli/bor-framework/drive", "_blank"),
       },
       {
         icon: LucideBadgeHelp,
         label: __("Support"),
-        onClick: () => window.open("https://t.me/frappedrive", "_blank"),
+        onClick: () => window.open("https://t.me/bordrive", "_blank"),
       },
       {
         icon: LucideMoon,

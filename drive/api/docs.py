@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-import frappe
-from frappe.rate_limiter import rate_limit
+import bor
+from bor.rate_limiter import rate_limit
 
 from drive.utils import strip_comment_spans
 
@@ -9,22 +9,22 @@ from .permissions import user_has_permission
 import mimemapper
 
 
-@frappe.whitelist(allow_guest=True)
+@bor.whitelist(allow_guest=True)
 def save_doc_comment(entity_name, doc_name, content):
     if not user_has_permission(entity_name, "comment"):
-        raise frappe.PermissionError("You do not have permission to comment on this file")
+        raise bor.PermissionError("You do not have permission to comment on this file")
 
 
-@frappe.whitelist(allow_guest=True)
+@bor.whitelist(allow_guest=True)
 @rate_limit(key="create_comment", limit=10, seconds=1)
 def create_comment(entity_name, name, content, is_reply, parent_name=None):
-    doc = frappe.get_doc("Drive File", entity_name)
-    parent = frappe.get_doc("Drive Comment", parent_name) if is_reply else doc
+    doc = bor.get_doc("Drive File", entity_name)
+    parent = bor.get_doc("Drive Comment", parent_name) if is_reply else doc
 
     if not user_has_permission(doc, "comment"):
-        frappe.throw("You don't have comment access")
+        bor.throw("You don't have comment access")
 
-    comment = frappe.get_doc(
+    comment = bor.get_doc(
         {
             "doctype": "Drive Comment",
             "name": name,
@@ -37,53 +37,53 @@ def create_comment(entity_name, name, content, is_reply, parent_name=None):
     return comment.name
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def edit_comment(name, content):
-    comment = frappe.get_doc("Drive Comment", name)
-    if comment.owner != frappe.session.user:
-        frappe.throw("You can't edit comments you don't own.")
+    comment = bor.get_doc("Drive Comment", name)
+    if comment.owner != bor.session.user:
+        bor.throw("You can't edit comments you don't own.")
     comment.content = content
     comment.save()
     return name
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def delete_comment(name, entire=True):
-    comment = frappe.get_doc("Drive Comment", name)
-    if comment.owner != frappe.session.user and comment.owner != "Guest":
-        frappe.throw("You can't edit comments you don't own.")
+    comment = bor.get_doc("Drive Comment", name)
+    if comment.owner != bor.session.user and comment.owner != "Guest":
+        bor.throw("You can't edit comments you don't own.")
     if entire:
         for r in comment.replies:
             r.delete()
     comment.delete()
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def resolve_comment(name, value):
-    comment = frappe.get_doc("Drive Comment", name)
+    comment = bor.get_doc("Drive Comment", name)
     comment.resolved = value
     comment.save()
 
 
-@frappe.whitelist(allow_guest=True)
+@bor.whitelist(allow_guest=True)
 def get_wiki_link(title, team):
     title = title.strip("/")
     possible_titles = [title, title + ".md", title + ".txt"]
-    names = (frappe.get_value("Drive File", {"title": k, "team": team, "is_group": 0}, "name") for k in possible_titles)
+    names = (bor.get_value("Drive File", {"title": k, "team": team, "is_group": 0}, "name") for k in possible_titles)
     try:
         name = next(k for k in names if k)
     except StopIteration:
-        frappe.throw("Cannot get this wikilink in this team.", frappe.NotFound)
+        bor.throw("Cannot get this wikilink in this team.", bor.NotFound)
 
-    frappe.local.response["type"] = "redirect"
-    frappe.local.response["location"] = "/drive/f/" + name
+    bor.local.response["type"] = "redirect"
+    bor.local.response["location"] = "/drive/f/" + name
     return title
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def create_version(doc, snapshot, duration=None, manual=0, title=""):
     if not manual:
-        versions = frappe.get_all(
+        versions = bor.get_all(
             "Drive Doc Version",
             filters={"parent": doc, "manual": 0},
             fields=["*"],
@@ -91,17 +91,17 @@ def create_version(doc, snapshot, duration=None, manual=0, title=""):
             limit_page_length=1,
         )
         if versions:
-            title = frappe.get_doc("Drive Doc Version", versions[0].name).title
+            title = bor.get_doc("Drive Doc Version", versions[0].name).title
             prev_time = datetime.strptime(title, "%Y-%m-%d %H:%M")
-            now_time = frappe.utils.now_datetime()
+            now_time = bor.utils.now_datetime()
             diff = now_time - prev_time
             if duration is not None and diff < timedelta(minutes=duration):
                 return False
             title = datetime.strftime(now_time, "%Y-%m-%d %H:%M")
         else:
-            title = datetime.strftime(frappe.utils.now_datetime(), "%Y-%m-%d %H:%M")
+            title = datetime.strftime(bor.utils.now_datetime(), "%Y-%m-%d %H:%M")
 
-    doc = frappe.get_doc("Drive Document", doc)
+    doc = bor.get_doc("Drive Document", doc)
     doc.append(
         "versions",
         {
@@ -112,8 +112,8 @@ def create_version(doc, snapshot, duration=None, manual=0, title=""):
     )
     try:
         doc.save()
-    except frappe.QueryDeadlockError:
-        doc = frappe.get_doc("Drive Document", doc.name)
+    except bor.QueryDeadlockError:
+        doc = bor.get_doc("Drive Document", doc.name)
         doc.append(
             "versions",
             {
@@ -133,33 +133,33 @@ QUICK_MAP = {
 }
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def get_extension(entity_name):
-    mime_type = frappe.get_value("Drive File", entity_name, "mime_type")
+    mime_type = bor.get_value("Drive File", entity_name, "mime_type")
     try:
         return mimemapper.get_extension(mime_type)
     except:
         return QUICK_MAP.get(mime_type, "")
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def create_blog(entity_name, html, attachments=None):
     """
     If the blog app is installed, creates a blog
     """
-    file = frappe.get_doc("Drive File", entity_name)
-    blogger = frappe.db.exists("Blogger", {"user": frappe.session.user})
+    file = bor.get_doc("Drive File", entity_name)
+    blogger = bor.db.exists("Blogger", {"user": bor.session.user})
     if not blogger:
-        frappe.throw("Please create a Blogger for your user first.")
+        bor.throw("Please create a Blogger for your user first.")
 
-    if not frappe.db.exists("Blog Category", {"name": "writer-export"}):
-        category = frappe.get_doc({"doctype": "Blog Category", "title": "Writer Export"})
+    if not bor.db.exists("Blog Category", {"name": "writer-export"}):
+        category = bor.get_doc({"doctype": "Blog Category", "title": "Writer Export"})
         category.insert()
         print("insrted", category, category.name)
     else:
-        category = frappe.get_doc("Blog Category", "writer-export")
+        category = bor.get_doc("Blog Category", "writer-export")
 
-    blog = frappe.get_doc(
+    blog = bor.get_doc(
         {
             "doctype": "Blog Post",
             "title": file.title,

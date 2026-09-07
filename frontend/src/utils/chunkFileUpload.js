@@ -76,7 +76,7 @@ async function uploadChunk(
       method: "POST",
       body: formData,
       headers: {
-        "X-Frappe-CSRF-Token": window.csrf_token,
+        "X-Bor-CSRF-Token": window.csrf_token,
         Accept: "application/json",
       },
     }

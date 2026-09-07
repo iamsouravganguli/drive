@@ -1,12 +1,12 @@
 from . import __version__ as app_version
 
 app_name = "drive"
-app_title = "Frappe Drive"
-app_publisher = "Frappe Technologies Pvt. Ltd."
+app_title = "Bor Drive"
+app_publisher = "Bor Technologies Pvt. Ltd."
 app_description = "An easy to use, document sharing and management solution."
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
-app_email = "developers@frappe.io"
+app_email = "developers@bor.local"
 app_license = "GNU Affero General Public License v3.0"
 
 website_route_rules = [
@@ -90,7 +90,7 @@ after_install = "drive.install.after_install"
 
 # Desk Notifications
 # ------------------
-# See frappe.core.notifications.get_notification_config
+# See bor.core.notifications.get_notification_config
 
 # notification_config = "drive.notifications.get_notification_config"
 # Permissions
@@ -152,12 +152,12 @@ after_request = "drive.api.product.after_request"
 # ------------------------------
 #
 # override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "drive.event.get_events"
+# 	"bor.desk.doctype.event.event.get_events": "drive.event.get_events"
 # }
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
-# along with any modifications made in other Frappe apps
+# along with any modifications made in other Bor apps
 # override_doctype_dashboards = {
 # 	"Task": "drive.task.get_dashboard_data"
 # }
@@ -203,17 +203,17 @@ signup_form_template = "templates/signup.html"
 ALLOWED_PATHS = [
     "/api/method/create-site-migration",
     "/api/method/find-my-sites",
-    "/api/method/frappe.realtime.get_user_info",
-    "/api/method/frappe.realtime.can_subscribe_doc",
-    "/api/method/frappe.realtime.can_subscribe_doctype",
-    "/api/method/frappe.realtime.has_permission",
-    "/api/method/frappe.www.login.login_via_frappe",
-    "/api/method/frappe.integrations.oauth2.authorize",
-    "/api/method/frappe.integrations.oauth2.approve",
-    "/api/method/frappe.integrations.oauth2.get_token",
-    "/api/method/frappe.integrations.oauth2.openid_profile",
-    "/api/method/frappe.integrations.oauth2_logins.login_via_frappe",
-    "/api/method/frappe.website.doctype.web_page_view.web_page_view.make_view_log",
+    "/api/method/bor.realtime.get_user_info",
+    "/api/method/bor.realtime.can_subscribe_doc",
+    "/api/method/bor.realtime.can_subscribe_doctype",
+    "/api/method/bor.realtime.has_permission",
+    "/api/method/bor.www.login.login_via_bor",
+    "/api/method/bor.integrations.oauth2.authorize",
+    "/api/method/bor.integrations.oauth2.approve",
+    "/api/method/bor.integrations.oauth2.get_token",
+    "/api/method/bor.integrations.oauth2.openid_profile",
+    "/api/method/bor.integrations.oauth2_logins.login_via_bor",
+    "/api/method/bor.website.doctype.web_page_view.web_page_view.make_view_log",
     "/api/method/ping",
     "/api/method/login",
     "/api/method/logout",
@@ -222,20 +222,20 @@ ALLOWED_PATHS = [
     "/api/method/press.press.doctype.stripe_webhook_log.stripe_webhook_log.stripe_webhook_handler",
     "/api/method/press.press.doctype.drip_email.drip_email.unsubscribe",
     "/api/method/upload_file",
-    "/api/method/frappe.search.web_search",
-    "/api/method/frappe.email.queue.unsubscribe",
+    "/api/method/bor.search.web_search",
+    "/api/method/bor.email.queue.unsubscribe",
     "/api/method/press.utils.telemetry.capture_read_event",
     "/api/method/validate_plan_change",
     "/api/method/marketplace-apps",
     "/api/method/press.www.dashboard.get_context_for_dev",
-    "/api/method/frappe.website.doctype.web_form.web_form.accept",
-    "/api/method/frappe.core.doctype.user.user.test_password_strength",
-    "/api/method/frappe.core.doctype.user.user.update_password",
+    "/api/method/bor.website.doctype.web_form.web_form.accept",
+    "/api/method/bor.core.doctype.user.user.test_password_strength",
+    "/api/method/bor.core.doctype.user.user.update_password",
 ]
 
 ALLOWED_WILDCARD_PATHS = [
     "/api/method/drive.api.",
-    "/api/method/frappe.integrations.oauth2_logins.",
+    "/api/method/bor.integrations.oauth2_logins.",
 ]
 
 DENIED_PATHS = []

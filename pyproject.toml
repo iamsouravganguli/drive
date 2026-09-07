@@ -1,7 +1,7 @@
 [project]
 name = "drive"
 authors = [
-    { name = "Frappe Technologies Pvt Ltd", email = "developers@frappe.io" },
+    { name = "Bor Technologies Pvt Ltd", email = "developers@bor.local" },
 ]
 description = "An easy to use, document sharing and management solution."
 requires-python = ">=3.10"

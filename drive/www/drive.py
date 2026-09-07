@@ -1,6 +1,6 @@
 from __future__ import unicode_literals
 
-import frappe
+import bor
 
 from drive.api.permissions import get_user_access
 
@@ -10,29 +10,29 @@ TITLES = {"login": "Login", "signup": "Create an Account"}
 
 
 def get_context():
-    csrf_token = frappe.sessions.get_csrf_token()
-    frappe.db.commit()
-    context = frappe._dict()
+    csrf_token = bor.sessions.get_csrf_token()
+    bor.db.commit()
+    context = bor._dict()
     context.boot = get_boot()
     context.boot.csrf_token = csrf_token
     context.csrf_token = csrf_token
-    context.site_name = frappe.local.site
+    context.site_name = bor.local.site
 
-    context.title = "Frappe Drive"
+    context.title = "Bor Drive"
     context.description = "Visit Drive online."
 
-    if not frappe.form_dict.app_path:
+    if not bor.form_dict.app_path:
         return context
 
     # Parsing
-    parts = frappe.form_dict.app_path.split("/")
+    parts = bor.form_dict.app_path.split("/")
     if len(parts) >= 3:
         context.description = "Open this online."
         # Ideally add thumbnail, but that might break if there's no thumbnail
         try:
-            [title, owner, is_group] = frappe.get_cached_value("Drive File", parts[1], ["title", "owner", "is_group"])
+            [title, owner, is_group] = bor.get_cached_value("Drive File", parts[1], ["title", "owner", "is_group"])
             context.title = "Folder - " + title if is_group else title
-            context.description = "Owned by " + frappe.get_cached_value("User", owner, "full_name")
+            context.description = "Owned by " + bor.get_cached_value("User", owner, "full_name")
         except:
             pass
 
@@ -42,20 +42,20 @@ def get_context():
     return context
 
 
-@frappe.whitelist(methods=["POST"])
+@bor.whitelist(methods=["POST"])
 def get_context_for_dev():
-    if not frappe.conf.developer_mode:
-        frappe.throw("This method is only meant for developer mode")
+    if not bor.conf.developer_mode:
+        bor.throw("This method is only meant for developer mode")
     return get_boot()
 
 
 def get_boot():
-    return frappe._dict(
+    return bor._dict(
         {
-            "frappe_version": frappe.__version__,
+            "bor_version": bor.__version__,
             "default_route": get_default_route(),
-            "site_name": frappe.local.site,
-            "read_only_mode": frappe.flags.read_only,
+            "site_name": bor.local.site,
+            "read_only_mode": bor.flags.read_only,
         }
     )
 

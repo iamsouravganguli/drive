@@ -1,9 +1,9 @@
 # Copyright (c) 2024, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
-import frappe
-from frappe.model.document import Document
-from frappe.utils import add_days, get_datetime, now, validate_email_address
+import bor
+from bor.model.document import Document
+from bor.utils import add_days, get_datetime, now, validate_email_address
 
 EXPIRY_DAYS = 1
 
@@ -20,44 +20,44 @@ class DriveUserInvitation(Document):
             try:
                 self.invite_via_email()
             except BaseException as e:
-                frappe.log_error(f"Failed to send invite email: {e}")
+                bor.log_error(f"Failed to send invite email: {e}")
                 pass
         elif self.status == "Proposed":
-            admins = frappe.get_all("Drive Team Member", filters={"parent": self.team, "access_level": 2}, pluck="user")
+            admins = bor.get_all("Drive Team Member", filters={"parent": self.team, "access_level": 2}, pluck="user")
             for admin in admins:
-                frappe.get_doc(
+                bor.get_doc(
                     {
                         "doctype": "Drive Notification",
                         "to_user": admin,
                         "type": "Team",
-                        "message": f"A person ({self.email}) from your domain has joined Frappe Drive",
+                        "message": f"A person ({self.email}) from your domain has joined Bor Drive",
                     }
                 ).insert(ignore_permissions=True)
-            frappe.db.commit()
+            bor.db.commit()
 
     def invite_via_email(self):
-        frappe.sendmail(
+        bor.sendmail(
             recipients=self.email,
-            subject=f"Frappe Drive - Invitation",
+            subject=f"Bor Drive - Invitation",
             template="drive_invitation",
             args={
-                "invite_link": frappe.utils.get_url(f"/api/method/drive.api.product.accept_invite?key={self.name}"),
-                "user": frappe.session.user,
-                "team_name": frappe.db.get_value("Drive Team", self.team, "title"),
+                "invite_link": bor.utils.get_url(f"/api/method/drive.api.product.accept_invite?key={self.name}"),
+                "user": bor.session.user,
+                "team_name": bor.db.get_value("Drive Team", self.team, "title"),
             },
             now=True,
         )
 
     def accept(self, redirect=True):
         if self.status not in ["Pending", "Automatic"]:
-            frappe.throw("This key has already been used")
+            bor.throw("This key has already been used")
         if self.status == "Expired" or self.has_expired():
             self.status = "Expired"
             self.save(ignore_permissions=True)
-            frappe.db.commit()
-            frappe.throw("Invalid or expired key")
+            bor.db.commit()
+            bor.throw("Invalid or expired key")
 
-        exists = frappe.db.exists(
+        exists = bor.db.exists(
             "Account Request",
             {
                 "email": self.email,
@@ -66,11 +66,11 @@ class DriveUserInvitation(Document):
         )
 
         if redirect:
-            frappe.local.response["type"] = "redirect"
+            bor.local.response["type"] = "redirect"
 
         if not exists:
             # If the user does not have an account, redirect to sign up
-            req = frappe.get_doc(
+            req = bor.get_doc(
                 {
                     "doctype": "Account Request",
                     "email": self.email,
@@ -78,28 +78,28 @@ class DriveUserInvitation(Document):
                     "login_count": 1,
                 }
             ).insert(ignore_permissions=True)
-            frappe.db.commit()
-            user_exists = frappe.db.exists("User", self.email)
+            bor.db.commit()
+            user_exists = bor.db.exists("User", self.email)
 
             if not user_exists:
-                team_name = frappe.db.get_value("Drive Team", self.team, "title")
+                team_name = bor.db.get_value("Drive Team", self.team, "title")
                 url = f"/drive/signup?e={self.email}{'&t=' + team_name if team_name else ''}&r={req.name}"
                 if isinstance(redirect, str):
                     url += f"&redirect-to={redirect}"
-                frappe.local.response["location"] = url
+                bor.local.response["location"] = url
                 return
 
         # Otherwise, add the user to the team
-        team = frappe.get_doc("Drive Team", self.team)
+        team = bor.get_doc("Drive Team", self.team)
         team.append("users", {"user": self.email, "access_level": 0 if self.as_guest else 1})
         team.save(ignore_permissions=True)
         self.status = "Accepted"
-        self.accepted_at = frappe.utils.now()
+        self.accepted_at = bor.utils.now()
         self.save(ignore_permissions=True)
-        frappe.db.commit()
+        bor.db.commit()
 
-        if frappe.session.user == "Guest":
-            frappe.local.login_manager.login_as(self.email)
+        if bor.session.user == "Guest":
+            bor.local.login_manager.login_as(self.email)
 
-        frappe.local.response["location"] = "/drive/t/" + self.team
+        bor.local.response["location"] = "/drive/t/" + self.team
         return "/drive/t/" + self.team

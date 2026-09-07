@@ -10,7 +10,7 @@
       >Log out</a>
     </div>
     <div class="flex flex-col items-center">
-      <FrappeDriveLogo class="inline-block h-12 w-12 rounded-md" />
+      <BorDriveLogo class="inline-block h-12 w-12 rounded-md" />
     </div>
 
     <h2 class="font-bold text-lg text-center text-ink-gray-8">

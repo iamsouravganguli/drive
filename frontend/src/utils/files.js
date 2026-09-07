@@ -63,10 +63,10 @@ export const openEntity = (entity, new_tab = false) => {
       )
     )
       window.open(entity.path, "_blank")
-  } else if (entity.mime_type === "frappe/slides") {
+  } else if (entity.mime_type === "bor/slides") {
     window.open("/slides/presentation/" + entity.path, "_blank")
   } else if (
-    entity.mime_type === "frappe_doc" ||
+    entity.mime_type === "bor_doc" ||
     entity.mime_type === "text/markdown"
   ) {
     router.push({
@@ -280,7 +280,7 @@ export const MIME_LIST_MAP = {
     "application/vnd.oasis.opendocument.text",
     "application/vnd.apple.pages",
     "application/x-abiword",
-    "frappe_doc",
+    "bor_doc",
   ],
   Spreadsheet: [
     "application/vnd.ms-excel",
@@ -506,7 +506,7 @@ export async function updateURLSlug(title) {
 export function getLink(entity, copy = true, withDomain = true) {
   let link
   if (entity.is_link) link = entity.path
-  else if (entity.mime_type === "frappe/slides") {
+  else if (entity.mime_type === "bor/slides") {
     link = window.location.origin + "/slides/presentation/" + entity.name
   } else {
     link = `${

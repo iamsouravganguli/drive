@@ -4,9 +4,9 @@ cd ~ || exit
 
 echo "Setting Up Bench..."
 
-pip install frappe-bench
-bench -v init frappe-bench --skip-assets --skip-redis-config-generation --python "$(which python)" --frappe-branch "develop"
-cd ./frappe-bench || exit
+pip install bor-bench
+bench -v init bor-bench --skip-assets --skip-redis-config-generation --python "$(which python)" --bor-branch "develop"
+cd ./bor-bench || exit
 
 echo "Get Drive..."
 bench get-app --skip-assets drive "${GITHUB_WORKSPACE}"
@@ -18,7 +18,7 @@ cd ./apps/drive || exit
 
 echo "Configuring git user..."
 git config user.email "developers@erpnext.com"
-git config user.name "frappe-pr-bot"
+git config user.name "bor-pr-bot"
 
 echo "Setting the correct git remote..."
 # Here, the git remote is a local file path by default. Let's change it to the upstream repo.
@@ -37,4 +37,4 @@ gh auth setup-git
 git push -u upstream "${branch_name}"
 
 echo "Creating a PR..."
-gh pr create --fill --base "${BASE_BRANCH}" --head "${branch_name}" -R frappe/drive
+gh pr create --fill --base "${BASE_BRANCH}" --head "${branch_name}" -R bor/drive

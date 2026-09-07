@@ -37,7 +37,7 @@ async function fetchContent() {
   const headers = {
     Accept: "application/json",
     "Content-Type": "application/json; charset=utf-8",
-    "X-Frappe-Site-Name": window.location.hostname,
+    "X-Bor-Site-Name": window.location.hostname,
   }
   const res = await fetch(
     `/api/method/drive.api.files.get_file_content?entity_name=${props.previewEntity.name}`,

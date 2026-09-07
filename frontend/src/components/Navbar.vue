@@ -69,7 +69,7 @@
           variant="solid"
           label="Try out Drive"
           @click="
-            open('https://frappecloud.com/dashboard/signup?product=drive')
+            open('https://borcloud.local/dashboard/signup?product=drive')
           "
         />
       </template>

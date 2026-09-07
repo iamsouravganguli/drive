@@ -33,7 +33,7 @@ async function getPdfFromDoc(entity_name) {
 }
 export function entitiesDownload(team, entities, transfer = false) {
   if (entities.length === 1) {
-    if (entities[0].mime_type === "frappe_doc") {
+    if (entities[0].mime_type === "bor_doc") {
       if (router.currentRoute.value.name) {
         return emitter.emit("printFile")
       }
@@ -173,7 +173,7 @@ function get_children(team, entity_name) {
   return fetch(url, {
     method: "GET",
     headers: {
-      "X-Frappe-CSRF-Token": window.csrf_token,
+      "X-Bor-CSRF-Token": window.csrf_token,
       "Content-Type": "application/json",
       Accept: "application/json",
     },

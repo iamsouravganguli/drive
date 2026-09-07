@@ -1,16 +1,16 @@
-import frappe
+import bor
 from pypika import functions as fn
 
 from drive.utils import default_team, get_file_type
 from drive.api.permissions import user_has_permission
 
 MEGA_BYTE = 1024**2
-DriveFile = frappe.qb.DocType("Drive File")
+DriveFile = bor.qb.DocType("Drive File")
 
 
-@frappe.whitelist()
+@bor.whitelist()
 def storage_breakdown(team, owned_only):
-    limit = frappe.get_value("Drive Team", team, "quota" if owned_only else "storage") * MEGA_BYTE
+    limit = bor.get_value("Drive Team", team, "quota" if owned_only else "storage") * MEGA_BYTE
     filters = {
         "team": team,
         "is_group": False,
@@ -18,10 +18,10 @@ def storage_breakdown(team, owned_only):
         "file_size": [">=", limit / 200],
     }
     if owned_only:
-        filters["owner"] = frappe.session.user
+        filters["owner"] = bor.session.user
 
     # Get is_link because file type check requires it
-    entities = frappe.db.get_list(
+    entities = bor.db.get_list(
         "Drive File",
         filters=filters,
         order_by="file_size desc",
@@ -31,12 +31,12 @@ def storage_breakdown(team, owned_only):
         r["file_type"] = get_file_type(r)
 
     query = (
-        frappe.qb.from_(DriveFile)
+        bor.qb.from_(DriveFile)
         .select(DriveFile.mime_type, fn.Sum(DriveFile.file_size).as_("file_size"))
         .where((DriveFile.is_group == 0) & (DriveFile.is_active == 1) & (DriveFile.team == team))
     )
     if owned_only:
-        query = query.where(DriveFile.owner == frappe.session.user)
+        query = query.where(DriveFile.owner == bor.session.user)
 
     return {
         "limit": limit,
@@ -45,21 +45,21 @@ def storage_breakdown(team, owned_only):
     }
 
 
-@frappe.whitelist()
+@bor.whitelist()
 @default_team
 def storage_bar_data(team, entity_name=None):
     if not team:
-        team = frappe.get_value("Drive File", entity_name, "team")
+        team = bor.get_value("Drive File", entity_name, "team")
     query = (
-        frappe.qb.from_(DriveFile)
+        bor.qb.from_(DriveFile)
         .where(
             (DriveFile.team == team)
             & (DriveFile.is_group == 0)
-            & (DriveFile.owner == frappe.session.user)
+            & (DriveFile.owner == bor.session.user)
             & (DriveFile.is_active == 1)
         )
         .select(fn.Coalesce(fn.Sum(DriveFile.file_size), 0).as_("total_size"))
     )
     result = query.run(as_dict=True)[0]
-    result["limit"] = frappe.get_value("Drive Team", team, "quota") * MEGA_BYTE
+    result["limit"] = bor.get_value("Drive Team", team, "quota") * MEGA_BYTE
     return result

@@ -1,6 +1,6 @@
 import base64
 import pycrdt
-import frappe
+import bor
 
 
 def walk(node, depth=0):
@@ -23,7 +23,7 @@ def walk(node, depth=0):
 
 
 def execute():
-    b64_data = frappe.db.get_value("Drive Document", "uu9aak6l3p", "content")
+    b64_data = bor.db.get_value("Drive Document", "uu9aak6l3p", "content")
     update_bytes = base64.b64decode(b64_data)
 
     doc = pycrdt.Doc()

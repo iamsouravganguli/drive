@@ -1,9 +1,9 @@
 import shutil
 from pathlib import Path
 
-import frappe
-from frappe.model.document import Document
-from frappe.utils import now
+import bor
+from bor.model.document import Document
+from bor.utils import now
 
 from drive.api.activity import create_new_activity_log
 from drive.api.files import get_new_title
@@ -23,7 +23,7 @@ class DriveFile(Document):
         return FileManager()
 
     def after_insert(self):
-        full_name = frappe.db.get_value("User", {"name": frappe.session.user}, ["full_name"])
+        full_name = bor.db.get_value("User", {"name": bor.session.user}, ["full_name"])
         message = f"{full_name} created {self.title}"
         create_new_activity_log(
             entity=self.name,
@@ -34,11 +34,11 @@ class DriveFile(Document):
         )
 
     def on_trash(self):
-        frappe.db.delete("Drive Favourite", {"entity": self.name})
-        frappe.db.delete("Drive Entity Log", {"entity_name": self.name})
-        frappe.db.delete("Drive Permission", {"entity": self.name})
-        frappe.db.delete("Drive Notification", {"notif_doctype_name": self.name})
-        frappe.db.delete("Drive Entity Activity Log", {"entity": self.name})
+        bor.db.delete("Drive Favourite", {"entity": self.name})
+        bor.db.delete("Drive Entity Log", {"entity_name": self.name})
+        bor.db.delete("Drive Permission", {"entity": self.name})
+        bor.db.delete("Drive Notification", {"notif_doctype_name": self.name})
+        bor.db.delete("Drive Entity Activity Log", {"entity": self.name})
 
         if self.is_group or self.document:
             for child in self.get_children():
@@ -48,7 +48,7 @@ class DriveFile(Document):
     def after_delete(self):
         """Cleanup after entity is deleted"""
         if self.document:
-            frappe.delete_doc("Drive Document", self.document)
+            bor.delete_doc("Drive Document", self.document)
 
         # Don't delete files on disk
         # if self.path:
@@ -60,29 +60,29 @@ class DriveFile(Document):
 
     def get_children(self):
         """Return a generator that yields child Documents."""
-        child_names = frappe.get_list(self.doctype, filters={"parent_entity": self.name}, pluck="name")
+        child_names = bor.get_list(self.doctype, filters={"parent_entity": self.name}, pluck="name")
         for name in child_names:
-            yield frappe.get_doc(self.doctype, name)
+            yield bor.get_doc(self.doctype, name)
 
     def __update_modified(func):
         def decorator(self, *args, **kwargs):
             client = kwargs.pop("client", None)
             old_parent = self.parent_entity
             res = func(self, *args, **kwargs)
-            frappe.db.set_value("Drive File", self.name, "_modified", now())
+            bor.db.set_value("Drive File", self.name, "_modified", now())
             update_clients(self.name, self.team, func.__name__, client)
             if client:
                 if func.__name__ == "rename":
-                    frappe.publish_realtime(
+                    bor.publish_realtime(
                         "client-rename",
                         {"entity_name": self.name, "title": self.title},
                     )
                 elif func.__name__ == "move":
-                    frappe.publish_realtime(
+                    bor.publish_realtime(
                         "list-remove",
                         {"parent": old_parent, "entity_name": self.name},
                     )
-                    frappe.publish_realtime(
+                    bor.publish_realtime(
                         "list-add",
                         {"file": prettify_file(self.as_dict())},
                     )
@@ -104,28 +104,28 @@ class DriveFile(Document):
         if new_team and not new_parent:
             new_parent = new_parent or get_home_folder(new_team).name
         elif new_parent and not new_team:
-            new_team = frappe.db.get_value('Drive File', new_parent, 'team')
+            new_team = bor.db.get_value('Drive File', new_parent, 'team')
         elif not new_parent and not new_team:
             new_team = self.team
             new_parent = new_parent or get_home_folder(new_team).name
 
         if new_parent == self.name:
-            frappe.throw(
+            bor.throw(
                 "Cannot move into itself",
-                frappe.PermissionError,
+                bor.PermissionError,
             )
         if not (
-            frappe.db.get_value("Drive File", new_parent, "is_group")
-            or frappe.db.get_value("Drive File", new_parent, "document")
+            bor.db.get_value("Drive File", new_parent, "is_group")
+            or bor.db.get_value("Drive File", new_parent, "document")
         ):
-            frappe.throw(
+            bor.throw(
                 "Can only move into folders",
                 NotADirectoryError,
             )
 
         for child in self.get_children():
             if child.name == self.name or child.name == new_parent:
-                frappe.throw(
+                bor.throw(
                     "Cannot move into itself",
                     ValueError,
                 )
@@ -140,7 +140,7 @@ class DriveFile(Document):
 
         self.team = new_team
 
-        not_in_disk = self.document or self.mime_type == "frappe/slides" or self.is_link
+        not_in_disk = self.document or self.mime_type == "bor/slides" or self.is_link
 
         # Condition is so that old file names aren't corrupted
         if not self.manager.flat and not not_in_disk:
@@ -151,9 +151,9 @@ class DriveFile(Document):
 
         self.save()
 
-        return frappe.get_value("Drive File", new_parent, ["title", "team", "name", "parent_entity"], as_dict=True)
+        return bor.get_value("Drive File", new_parent, ["title", "team", "name", "parent_entity"], as_dict=True)
 
-    @frappe.whitelist()
+    @bor.whitelist()
     @__update_modified
     def rename(self, new_title):
         """
@@ -168,12 +168,12 @@ class DriveFile(Document):
 
         validated_name = get_new_title(new_title, self.parent_entity, self.is_group, self.name)
         if new_title != validated_name:
-            return frappe.throw(
+            return bor.throw(
                 f"{'Folder' if self.is_group else 'File'} '{new_title}' already exists\n Try '{validated_name}' ",
                 FileExistsError,
             )
 
-        full_name = frappe.db.get_value("User", {"name": frappe.session.user}, ["full_name"])
+        full_name = bor.db.get_value("User", {"name": bor.session.user}, ["full_name"])
         message = f"{full_name} renamed {self.title} to {new_title}"
         create_new_activity_log(
             entity=self.name,
@@ -184,11 +184,11 @@ class DriveFile(Document):
             field_new_value=new_title,
         )
         if len(new_title) > 140:
-            frappe.throw("Your title can't be more than 140 characters.")
+            bor.throw("Your title can't be more than 140 characters.")
         self.title = new_title
         path = self.manager.rename(self)
 
-        if self.path and self.mime_type != "frappe/slides":
+        if self.path and self.mime_type != "bor/slides":
             self.recursive_path_move(self.path, path)
 
         self.save()
@@ -197,12 +197,12 @@ class DriveFile(Document):
         if new:
             self.path = new
         for child in self.get_children():
-            not_in_disk = child.mime_type == "frappe/slides" or child.is_link
+            not_in_disk = child.mime_type == "bor/slides" or child.is_link
             if child.path and not not_in_disk:
                 child.recursive_path_move(child.path, str(Path(new) / Path(child.path).relative_to(old)))
         self.save()
 
-    @frappe.whitelist()
+    @bor.whitelist()
     def change_color(self, new_color):
         """
         Change color of a folder
@@ -211,14 +211,14 @@ class DriveFile(Document):
         :raises InvalidColor: If the color is not a hex value string
         :return: DriveEntity doc once it's updated
         """
-        return frappe.db.set_value("Drive File", self.name, "color", new_color, update_modified=False)
+        return bor.db.set_value("Drive File", self.name, "color", new_color, update_modified=False)
 
     def permanent_delete(self):
         write_access = user_has_permission(self, "write")
         parent_write_access = user_has_permission(self.parent_entity, "write")
 
         if not (write_access or parent_write_access):
-            frappe.throw("Not permitted", frappe.PermissionError)
+            bor.throw("Not permitted", bor.PermissionError)
 
         self.is_active = -1
         if self.is_group:
@@ -226,7 +226,7 @@ class DriveFile(Document):
                 child.permanent_delete()
         self.save()
 
-    @frappe.whitelist()
+    @bor.whitelist()
     def share(
         self,
         user=None,
@@ -238,13 +238,13 @@ class DriveFile(Document):
         team=False,
     ):
         if not user_has_permission(self, "share"):
-            frappe.throw("Not permitted to share", frappe.PermissionError)
+            bor.throw("Not permitted to share", bor.PermissionError)
 
         # Clean out existing general records
         if not user or team:
             self.unshare("$GENERAL")
 
-        permission = frappe.db.get_value(
+        permission = bor.db.get_value(
             "Drive Permission",
             {
                 "entity": self.name,
@@ -253,7 +253,7 @@ class DriveFile(Document):
             },
         )
         if not permission:
-            permission = frappe.new_doc("Drive Permission")
+            permission = bor.new_doc("Drive Permission")
             permission.update(
                 {
                     "user": user,
@@ -262,10 +262,10 @@ class DriveFile(Document):
                 }
             )
         else:
-            permission = frappe.get_doc("Drive Permission", permission)
+            permission = bor.get_doc("Drive Permission", permission)
 
         # Create user
-        if not frappe.db.exists("User", user):
+        if not bor.db.exists("User", user):
             invite_users(user, auto=True)
 
         levels = [
@@ -279,7 +279,7 @@ class DriveFile(Document):
 
         permission.save(ignore_permissions=True)
 
-    @frappe.whitelist()
+    @bor.whitelist()
     def unshare(self, user=None):
         """Unshare this file or folder with the specified user
         :param user: User or group with whom this is to be shared
@@ -288,17 +288,17 @@ class DriveFile(Document):
         absolute_path = generate_upward_path(self.name)
         for i in absolute_path:
             if i["owner"] == user:
-                frappe.throw("User owns parent folder", frappe.PermissionError)
+                bor.throw("User owns parent folder", bor.PermissionError)
 
         if user == "$GENERAL":
-            perm_names = frappe.db.get_list(
+            perm_names = bor.db.get_list(
                 "Drive Permission",
                 {"entity": self.name},
                 or_filters={"user": "", "team": 1},
                 pluck="name",
             )
             for perm_name in perm_names:
-                frappe.delete_doc("Drive Permission", perm_name, ignore_permissions=True)
+                bor.delete_doc("Drive Permission", perm_name, ignore_permissions=True)
 
             # If overriding perms of a parent folder, write out an explicit denial
             public_access = get_user_access(self, "Guest")
@@ -311,7 +311,7 @@ class DriveFile(Document):
 
             # Doesn't work as higher access "overrides" in get_user_access
             if user is not None:
-                frappe.get_doc(
+                bor.get_doc(
                     {
                         "doctype": "Drive Permission",
                         "user": user,
@@ -325,7 +325,7 @@ class DriveFile(Document):
                 ).insert()
 
         else:
-            perm_name = frappe.db.get_value(
+            perm_name = bor.db.get_value(
                 "Drive Permission",
                 {
                     "user": user,
@@ -333,8 +333,8 @@ class DriveFile(Document):
                 },
             )
             if perm_name:
-                frappe.delete_doc("Drive Permission", perm_name, ignore_permissions=True)
+                bor.delete_doc("Drive Permission", perm_name, ignore_permissions=True)
 
 
 def on_doctype_update():
-    frappe.db.add_index("Drive File", ["title"])
+    bor.db.add_index("Drive File", ["title"])

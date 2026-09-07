@@ -122,7 +122,7 @@ onMounted(() => {
     timeout: 120000, // 2 minutes
     chunkSize: 20 * 1024 * 1024, // 20MB
     headers: {
-      "X-Frappe-CSRF-Token": window.csrf_token,
+      "X-Bor-CSRF-Token": window.csrf_token,
       Accept: "application/json",
     },
     addRemoveLinks: true,

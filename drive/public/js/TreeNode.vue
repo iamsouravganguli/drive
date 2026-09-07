@@ -29,7 +29,7 @@
         class="ml-auto"
       />
     </span>
-    <div v-if="node.file_url && frappe.utils.is_image_file(node.file_url)">
+    <div v-if="node.file_url && bor.utils.is_image_file(node.file_url)">
       <div v-show="isOpen" class="popover" ref="popover" role="tooltip">
         <img :src="node.file_url" />
       </div>
@@ -71,13 +71,13 @@ let emit = defineEmits(["node-click", "load-more"]);
 
 // computed
 
-let linkIcon = frappe.utils.icon("external-link", "sm");
-let checkIcon = frappe.utils.icon("tick", "sm", "", "", "check-icon");
+let linkIcon = bor.utils.icon("external-link", "sm");
+let checkIcon = bor.utils.icon("tick", "sm", "", "", "check-icon");
 let icon = computed(() => {
   if (!props.node.is_group) return;
 
-  if (props.node.open) return frappe.utils.icon("folder-open", "sm");
-  return frappe.utils.icon("folder-normal", "sm");
+  if (props.node.open) return bor.utils.icon("folder-open", "sm");
+  return bor.utils.icon("folder-normal", "sm");
 });
 
 const reference = ref(null);

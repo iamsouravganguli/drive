@@ -70,13 +70,13 @@ export const isAdmin = createResource({
 })
 
 export const apps = createResource({
-  url: "frappe.apps.get_apps",
+  url: "bor.apps.get_apps",
   cache: "apps",
   transform: (data) => {
     let apps = [
       {
-        name: "frappe",
-        logo: "/assets/frappe/images/framework.png",
+        name: "bor",
+        logo: "/assets/bor/images/framework.png",
         title: "Desk",
         route: "/app",
       },
