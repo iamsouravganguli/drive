@@ -895,12 +895,19 @@ def search(query):
     Basic search implementation
     """
     teams = get_teams()
+    # tuple(teams) renders "('x',)" for a single team, which is invalid SQL.
+    team_list = ", ".join(bor.db.escape(t) for t in teams)
     if bor.db.db_type == "postgres":
-        match_clause = "AND to_tsvector('english', `tabDrive File`.title) @@ plainto_tsquery('english', %(text)s)"
+        match_clause = "to_tsvector('english', `tabDrive File`.title) @@ plainto_tsquery('english', %(text)s)"
+        # Postgres requires every selected column in GROUP BY; name is unique so this keeps MySQL semantics.
+        group_clause = """GROUP BY `tabDrive File`.name, `tabDrive File`.title, `tabDrive File`.is_group,
+            `tabDrive File`.is_link, `tabDrive File`.mime_type, `tabDrive File`.document,
+            `tabDrive File`.color, `tabUser`.name, `tabUser`.user_image, `tabUser`.full_name"""
         text = " ".join(query.split())
         params: dict = {"text": text}
     else:
-        match_clause = f"AND MATCH(title) AGAINST ({bor.db.escape(' '.join(k + '*' for k in query.split()))} IN BOOLEAN MODE)"
+        match_clause = f"MATCH(title) AGAINST ({bor.db.escape(' '.join(k + '*' for k in query.split()))} IN BOOLEAN MODE)"
+        group_clause = "GROUP  BY `tabDrive File`.`name`"
         params = {}
     try:
         result = bor.db.sql(
@@ -917,11 +924,11 @@ def search(query):
                 `tabUser`.full_name
         FROM `tabDrive File`
         LEFT JOIN `tabUser` ON `tabDrive File`.`owner` = `tabUser`.`name`
-        WHERE `tabDrive File`.team IN {tuple(teams)}
+        WHERE `tabDrive File`.team IN ({team_list})
             AND `tabDrive File`.`is_active` = 1
             AND `tabDrive File`.`parent_entity` <> ''
             AND {match_clause}
-        GROUP  BY `tabDrive File`.`name`
+            {group_clause}
         """,
             values=params,
             as_dict=1,
