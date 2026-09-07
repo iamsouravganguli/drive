@@ -898,12 +898,15 @@ def search(query):
     # tuple(teams) renders "('x',)" for a single team, which is invalid SQL.
     team_list = ", ".join(bor.db.escape(t) for t in teams)
     if bor.db.db_type == "postgres":
-        match_clause = "to_tsvector('english', `tabDrive File`.title) @@ plainto_tsquery('english', %(text)s)"
+        # File search is substring typeahead: stemming/tsquery mangles filenames
+        # ("quarterly-testdocument.txt" becomes one unstemmed token), so use ILIKE.
+        like = " ".join(query.split()).replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        match_clause = "`tabDrive File`.title ILIKE %(text)s ESCAPE '\\'"
         # Postgres requires every selected column in GROUP BY; name is unique so this keeps MySQL semantics.
         group_clause = """GROUP BY `tabDrive File`.name, `tabDrive File`.title, `tabDrive File`.is_group,
             `tabDrive File`.is_link, `tabDrive File`.mime_type, `tabDrive File`.document,
             `tabDrive File`.color, `tabUser`.name, `tabUser`.user_image, `tabUser`.full_name"""
-        text = " ".join(query.split())
+        text = f"%{like}%"
         params: dict = {"text": text}
     else:
         match_clause = f"MATCH(title) AGAINST ({bor.db.escape(' '.join(k + '*' for k in query.split()))} IN BOOLEAN MODE)"
