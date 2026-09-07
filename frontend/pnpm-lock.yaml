@@ -162,6 +162,9 @@ importers:
       less:
         specifier: ^4.2.0
         version: 4.4.0
+      lucide-static:
+        specifier: ^0.543.0
+        version: 0.543.0
       postcss:
         specifier: ^8.4.21
         version: 8.5.6
@@ -174,6 +177,15 @@ importers:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.17
+      unplugin-auto-import:
+        specifier: ^19.3.0
+        version: 19.3.0(@nuxt/kit@3.19.1(magicast@0.3.5))(@vueuse/core@10.11.1(vue@3.5.21(typescript@5.9.2)))
+      unplugin-icons:
+        specifier: ^22.3.0
+        version: 22.3.0(@vue/compiler-sfc@3.5.21)
+      unplugin-vue-components:
+        specifier: ^28.8.0
+        version: 28.8.0(@babel/parser@7.28.4)(@nuxt/kit@3.19.1(magicast@0.3.5))(vue@3.5.21(typescript@5.9.2))
       vite:
         specifier: ^4.5.14
         version: 4.5.14(less@4.4.0)(sass@1.90.0)(terser@5.44.0)
@@ -3458,6 +3470,9 @@ packages:
 
   lucide-static@0.535.0:
     resolution: {integrity: sha512-wlYTSPpeyMjLjQ5jgSAENQwVfURVf2XHV5TDp8YPCJBEyWz+FJGuGB5LYBgOFvWIDOMW+AIoiA8sNd8My/nxlw==}
+
+  lucide-static@0.543.0:
+    resolution: {integrity: sha512-k9HUQncNuOThizzuuqvgjpYPHaE3Hae89l/i+Y7BRgOvzWeqQ9Sbllin8m4NO5BP+JaaRHTzn29o4oZJJi/5uQ==}
 
   lucide-vue-next@0.543.0:
     resolution: {integrity: sha512-Az5kpNm/koKAwSNIKjsZ4uHV2tVfmlQlcHwFBygQ8gc5/jFg7An9OrxgDy/aE5m+HLx7VfLYqDxLr8gWecZbQA==}
@@ -8829,6 +8844,8 @@ snapshots:
       yallist: 3.1.1
 
   lucide-static@0.535.0: {}
+
+  lucide-static@0.543.0: {}
 
   lucide-vue-next@0.543.0(vue@3.5.21(typescript@5.9.2)):
     dependencies:

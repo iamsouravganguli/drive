@@ -12,8 +12,8 @@ export default defineConfig(async ({ mode }) => {
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: "false",
     },
     plugins: [
-      borui({
-        borProxy: true,
+      frappeui({
+        frappeProxy: true,
         lucideIcons: true,
         jinjaBootData: true,
         buildConfig: {
