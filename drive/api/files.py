@@ -894,8 +894,14 @@ def search(query):
     """
     Basic search implementation
     """
-    text = bor.db.escape(" ".join(k + "*" for k in query.split()))
     teams = get_teams()
+    if bor.db.db_type == "postgres":
+        match_clause = "AND to_tsvector('english', `tabDrive File`.title) @@ plainto_tsquery('english', %(text)s)"
+        text = " ".join(query.split())
+        params: dict = {"text": text}
+    else:
+        match_clause = f"AND MATCH(title) AGAINST ({bor.db.escape(' '.join(k + '*' for k in query.split()))} IN BOOLEAN MODE)"
+        params = {}
     try:
         result = bor.db.sql(
             f"""
@@ -914,9 +920,10 @@ def search(query):
         WHERE `tabDrive File`.team IN {tuple(teams)}
             AND `tabDrive File`.`is_active` = 1
             AND `tabDrive File`.`parent_entity` <> ''
-            AND MATCH(title) AGAINST ({text} IN BOOLEAN MODE)
+            AND {match_clause}
         GROUP  BY `tabDrive File`.`name`
         """,
+            values=params,
             as_dict=1,
         )
         for r in result:
