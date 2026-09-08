@@ -387,7 +387,10 @@ export function printDoc(html, settings = {}) {
     jetbrains: "var(--font-jetbrains)",
     lora: "var(--font-lora)",
     merriweather: "var(--font-merriweather)",
+    "noto-sans-devanagari": "var(--font-noto-sans-devanagari)",
     nunito: "var(--font-nunito)",
+    "tiro-devanagari-hindi": "var(--font-tiro-devanagari-hindi)",
+    "yatra-one": "var(--font-yatra-one)",
   }
   const fontFamily = fontMap[settings?.font_family]
   const fontSize = settings?.font_size
@@ -700,6 +703,36 @@ export const FONT_FAMILIES = [
     isActive: (editor) =>
       editor.isActive("textStyle", {
         fontFamily: "var(--font-nunito)",
+      }),
+  },
+  {
+    label: "Hindi - Noto Sans",
+    value: "noto-sans-devanagari",
+    action: (editor) =>
+      editor.chain().focus().setFontFamily("var(--font-noto-sans-devanagari)").run(),
+    isActive: (editor) =>
+      editor.isActive("textStyle", {
+        fontFamily: "var(--font-noto-sans-devanagari)",
+      }),
+  },
+  {
+    label: "Hindi - Tiro Serif",
+    value: "tiro-devanagari-hindi",
+    action: (editor) =>
+      editor.chain().focus().setFontFamily("var(--font-tiro-devanagari-hindi)").run(),
+    isActive: (editor) =>
+      editor.isActive("textStyle", {
+        fontFamily: "var(--font-tiro-devanagari-hindi)",
+      }),
+  },
+  {
+    label: "Hindi - Yatra One",
+    value: "yatra-one",
+    action: (editor) =>
+      editor.chain().focus().setFontFamily("var(--font-yatra-one)").run(),
+    isActive: (editor) =>
+      editor.isActive("textStyle", {
+        fontFamily: "var(--font-yatra-one)",
       }),
   },
 ]

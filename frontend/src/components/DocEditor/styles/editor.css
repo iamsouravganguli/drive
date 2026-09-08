@@ -18,6 +18,9 @@ body {
   --font-caveat: "Caveat", cursive;
   --font-nunito: "Nunito", sans-serif;
   --font-comic-sans: "Comic Sans MS", sans-serif;
+  --font-noto-sans-devanagari: "Noto Sans Devanagari", sans-serif;
+  --font-tiro-devanagari-hindi: "Tiro Devanagari Hindi", serif;
+  --font-yatra-one: "Yatra One", "Noto Sans Devanagari", sans-serif;
 }
 
 .prose-sm {

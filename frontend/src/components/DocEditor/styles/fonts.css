@@ -164,3 +164,40 @@
   font-style: normal;
   font-display: swap;
 }
+
+/* Noto Sans Devanagari */
+@font-face {
+  font-family: "Noto Sans Devanagari";
+  src: url("/assets/drive/fonts/Noto_Sans_Devanagari/NotoSansDevanagari-wght.ttf")
+    format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tiro Devanagari Hindi */
+@font-face {
+  font-family: "Tiro Devanagari Hindi";
+  src: url("/assets/drive/fonts/Tiro_Devanagari_Hindi/TiroDevanagariHindi-Regular.ttf")
+    format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Tiro Devanagari Hindi";
+  src: url("/assets/drive/fonts/Tiro_Devanagari_Hindi/TiroDevanagariHindi-Italic.ttf")
+    format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Yatra One */
+@font-face {
+  font-family: "Yatra One";
+  src: url("/assets/drive/fonts/Yatra_One/YatraOne-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
