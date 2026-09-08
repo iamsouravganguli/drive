@@ -28,7 +28,11 @@ add_to_apps_screen = [
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/drive/css/drive.css"
-app_include_js = "ff_integration.bundle.js"
+# ff_integration hook removed (was: app_include_js = "ff_integration.bundle.js"):
+# the bare filename is not in assets.json, so the framework emits it as a
+# relative URL that 404s on every desk page. The file itself is unbuilt source
+# (bare .vue imports) and cannot run as a classic script anyway.
+# Re-add only with a real built bundle path, e.g. "/assets/drive/js/<name>.bundle.js".
 
 # include js, css files in header of web template
 # web_include_css = "/assets/drive/css/drive.css"
