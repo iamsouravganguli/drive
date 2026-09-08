@@ -17,6 +17,9 @@ importers:
       '@headlessui/vue':
         specifier: ^1.7.23
         version: 1.7.23(vue@3.5.21(typescript@5.9.2))
+      '@sanskrit-coders/sanscript':
+        specifier: ^1.2.8
+        version: 1.2.8
       '@sereneinserenade/tiptap-comment-extension':
         specifier: ^0.1.2
         version: 0.1.2(@tiptap/core@2.26.1(@tiptap/pm@2.26.1))(@tiptap/pm@2.26.1)
@@ -729,6 +732,9 @@ packages:
   '@iconify/utils@3.0.2':
     resolution: {integrity: sha512-EfJS0rLfVuRuJRn4psJHtK2A9TqVnkxPpHY6lYHiB9+8eSuudsxbwMiavocG45ujOo6FJ+CIRlRnlOGinzkaGQ==}
 
+  '@indic-transliteration/common_maps@1.0.6':
+    resolution: {integrity: sha512-OYX+SrpK26FjVZNphOdsQc9Ph0yFDtoWsU7INjhEhhWvGqzxF3Mqi0fF0buUsB4jpRWJe+7U+u9PO4fsTP/lfg==}
+
   '@interactjs/types@1.10.27':
     resolution: {integrity: sha512-BUdv0cvs4H5ODuwft2Xp4eL8Vmi3LcihK42z0Ft/FbVJZoRioBsxH+LlsBdK4tAie7PqlKGy+1oyOncu1nQ6eA==}
 
@@ -1421,6 +1427,10 @@ packages:
     resolution: {integrity: sha512-xMmiWRR8sp72Zqwjgtf3QbZfF1wdh8X2ABu3EaozvZcyHJeU0r+XAnXdKgs4cCAp6ORoYoCygipYP1mjmbjrsg==}
     cpu: [x64]
     os: [win32]
+
+  '@sanskrit-coders/sanscript@1.2.8':
+    resolution: {integrity: sha512-xZmH8yFQ1KC/g9pHEzaFvVPEVIiI9SG04xCToJWZzUqF+QU7TqbqC5FsXOj7O0EXXtBh3EwEA0aRrqpK3FIOZw==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@sereneinserenade/tiptap-comment-extension@0.1.2':
     resolution: {integrity: sha512-ExUgTIakb0vRGzOY1ucs8FQd2FvNIW59faYsuL1V45evYeVbwT0pGc1U/AaoXp6a+advkUGQy04ThURH7heOPA==}
@@ -4749,6 +4759,9 @@ packages:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
 
+  toml@2.3.6:
+    resolution: {integrity: sha512-gVweAectJU3ebq//Ferr2JUY4WKSDe5N+z0FvjDncLGyHmIDoxgY/2Ie4qfEIDm4IS7OA6Rmdm7pdEEdMcV/xQ==}
+
   totalist@3.0.1:
     resolution: {integrity: sha512-sf4i37nQ2LBx4m3wB74y+ubopq6W/dIzXg0FDGjsYnZHVa1Da8FH853wlL2gtUhg+xJXjfk3kUZS3BRoQeoQBQ==}
     engines: {node: '>=6'}
@@ -5845,6 +5858,8 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@indic-transliteration/common_maps@1.0.6': {}
+
   '@interactjs/types@1.10.27': {}
 
   '@internationalized/date@3.8.2':
@@ -6547,6 +6562,11 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.50.0':
     optional: true
+
+  '@sanskrit-coders/sanscript@1.2.8':
+    dependencies:
+      '@indic-transliteration/common_maps': 1.0.6
+      toml: 2.3.6
 
   '@sereneinserenade/tiptap-comment-extension@0.1.2(@tiptap/core@2.26.1(@tiptap/pm@2.26.1))(@tiptap/pm@2.26.1)':
     dependencies:
@@ -10475,6 +10495,8 @@ snapshots:
       is-number: 7.0.0
 
   toidentifier@1.0.1: {}
+
+  toml@2.3.6: {}
 
   totalist@3.0.1: {}
 

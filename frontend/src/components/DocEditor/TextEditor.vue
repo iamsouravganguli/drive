@@ -163,6 +163,11 @@ import H1 from "./icons/h-1.vue"
 import H2 from "./icons/h-2.vue"
 import H3 from "./icons/h-3.vue"
 import LucideMessageCircle from "~icons/lucide/message-circle"
+import LucideLanguages from "~icons/lucide/languages"
+import {
+  convertWordBeforeCursor,
+  isBoundaryChar,
+} from "./utils/hindiTyping"
 
 import store from "@/store"
 import emitter from "@/emitter"
@@ -208,6 +213,34 @@ const editor = computed(() => {
   return editor
 })
 provide("editor", editor)
+
+// Hindi transliteration toggle: while on, Roman words become Devanagari
+// as they are typed (converted on space, punctuation, or Enter).
+const hindiTyping = ref(false)
+watch(
+  editor,
+  (ed, _, onCleanup) => {
+    if (!ed?.view?.dom) return
+    const dom = ed.view.dom
+    const onBeforeInput = (e) => {
+      if (!hindiTyping.value) return
+      if (e.inputType !== "insertText" || !isBoundaryChar(e.data)) return
+      convertWordBeforeCursor(ed.view)
+    }
+    const onKeyDown = (e) => {
+      if (!hindiTyping.value) return
+      if (e.key !== "Enter") return
+      convertWordBeforeCursor(ed.view)
+    }
+    dom.addEventListener("beforeinput", onBeforeInput)
+    dom.addEventListener("keydown", onKeyDown)
+    onCleanup(() => {
+      dom.removeEventListener("beforeinput", onBeforeInput)
+      dom.removeEventListener("keydown", onKeyDown)
+    })
+  },
+  { immediate: true }
+)
 const scrollParent = computed(() =>
   document.querySelector("#editorScrollContainer")
 )
@@ -405,6 +438,14 @@ const menuButtons = computed(() =>
             ),
           },
           "FontColor",
+          {
+            label: "Hindi Typing",
+            icon: LucideLanguages,
+            action: () => {
+              hindiTyping.value = !hindiTyping.value
+            },
+            isActive: () => hindiTyping.value,
+          },
           "Separator",
           {
             label: "Comment",

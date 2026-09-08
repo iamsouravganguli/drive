@@ -12,6 +12,7 @@
   "dependencies": {
     "@headlessui-float/vue": "^0.13.3",
     "@headlessui/vue": "^1.7.23",
+    "@sanskrit-coders/sanscript": "^1.2.8",
     "@sereneinserenade/tiptap-comment-extension": "^0.1.2",
     "@tato30/vue-pdf": "1.10.0",
     "@tiptap/core": "2.26.1",
