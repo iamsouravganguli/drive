@@ -125,6 +125,18 @@ const COMMON_WORDS = {
 	zameen: "ज़मीन",
 }
 
+// Font values (matching FONT_FAMILIES) that carry Devanagari glyphs.
+// Picking one of these turns Hindi typing on automatically.
+export const HINDI_FONT_VALUES = [
+	"noto-sans-devanagari",
+	"tiro-devanagari-hindi",
+	"yatra-one",
+]
+
+export function isHindiFontValue(value) {
+	return HINDI_FONT_VALUES.includes(value)
+}
+
 // Characters that end a word: typing one converts the Roman word before it.
 const BOUNDARY_CHARS = new Set([
 	" ",

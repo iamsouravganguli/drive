@@ -167,6 +167,7 @@ import LucideLanguages from "~icons/lucide/languages"
 import {
   convertWordBeforeCursor,
   isBoundaryChar,
+  isHindiFontValue,
 } from "./utils/hindiTyping"
 
 import store from "@/store"
@@ -217,6 +218,16 @@ provide("editor", editor)
 // Hindi transliteration toggle: while on, Roman words become Devanagari
 // as they are typed (converted on space, punctuation, or Enter).
 const hindiTyping = ref(false)
+provide("hindiTyping", hindiTyping)
+// A Hindi default font means Hindi typing (never auto-disabled; the toggle
+// stays the manual override).
+watch(
+  () => props.settings?.font_family,
+  (value) => {
+    if (isHindiFontValue(value)) hindiTyping.value = true
+  },
+  { immediate: true }
+)
 watch(
   editor,
   (ed, _, onCleanup) => {

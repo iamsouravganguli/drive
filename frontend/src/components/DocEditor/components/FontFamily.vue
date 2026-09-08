@@ -19,8 +19,9 @@
 </template>
 <script setup>
 import { Combobox } from "frappe-ui"
-import { ref, watchEffect, watch } from "vue"
+import { inject, ref, watchEffect, watch } from "vue"
 import { FONT_FAMILIES } from "@/utils/files"
+import { isHindiFontValue } from "../utils/hindiTyping"
 
 const props = defineProps({
   editor: Object,
@@ -70,8 +71,13 @@ watchEffect(() => {
   )?.value
 })
 
+const hindiTyping = inject("hindiTyping", null)
+
 watch(selected, (val) => {
-  if (val) FONT_FAMILIES.find((k) => k.value === val).action(props.editor)
+  if (!val) return
+  FONT_FAMILIES.find((k) => k.value === val).action(props.editor)
+  // Picking a Hindi font means the user wants to type Hindi.
+  if (isHindiFontValue(val) && hindiTyping) hindiTyping.value = true
 })
 watch(size, (val) => {
   props.editor.commands.setFontSize(val)
